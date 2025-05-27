@@ -4,7 +4,7 @@ import random
 from groq import Groq
 
 class BuildMyChar:
-    """Classe para construir personagens, coletando informações do usuário e gerando descrições usando IA."""
+    # Classe para construir personagens, coletando informações do usuário e gerando descrições usando IA.
     def __init__(self):
         api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
@@ -26,7 +26,7 @@ class BuildMyChar:
             "personagem_dialogos": "temp/personagem_dialogos.json"
         }
     
-    """Abre um arquivo JSON e retorna os dados como um dicionário. Se ocorrer um erro, imprime uma mensagem e retorna um dicionário vazio."""
+    # Abre um arquivo JSON e retorna os dados como um dicionário. Se ocorrer um erro, imprime uma mensagem e retorna um dicionário vazio.
     def abrir_json(self, caminho):
         try:
             with open(caminho, 'r', encoding='utf-8') as f:
@@ -36,7 +36,7 @@ class BuildMyChar:
             print(f"Erro ao abrir JSON: {e}")
             return {}
     
-    """Salva os dados em um arquivo JSON, formatando com indentação e sem caracteres ASCII."""   
+    # Salva os dados em um arquivo JSON, formatando com indentação e sem caracteres ASCII.
     def salvar_json(self, caminho, dados):
         try:
             with open(caminho, 'w', encoding='utf-8') as f:
@@ -45,7 +45,7 @@ class BuildMyChar:
         except Exception as e:
             print(f"Erro ao salvar JSON: {e}")
 
-    """Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado."""
+    # Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado.
     def formatar_texto(self, texto, cor=None, negrito=False, italico=False, sublinhado=False):
         estilos = []
 
@@ -78,7 +78,7 @@ class BuildMyChar:
 
         return f"{prefixo}{texto}{reset}"
 
-    """Envia um prompt para a IA e retorna a resposta formatada."""
+    # Envia um prompt para a IA e retorna a resposta formatada.
     def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama3-70b-8192"):
         if not system_prompt:
             system_prompt = {
@@ -110,25 +110,25 @@ class BuildMyChar:
         
         return response.choices[0].message.content.strip()
     
-    """Imprime as informações do personagem formatadas, destacando cada informação com estilo."""
+    # Imprime as informações do personagem formatadas, destacando cada informação com estilo.
     def print_personagem_info(self, respostas):          
         print(self.formatar_texto("Informações do Personagem:", cor="amarelo", negrito=True))
         for k, v in self.respostas.items():
             print(self.formatar_texto(f"* {k}: {v}", cor="amarelo", italico=True))
     
-    """Imprime a descrição geral do personagem, formatando o texto para destaque."""
+    # Imprime a descrição geral do personagem, formatando o texto para destaque.
     def print_personagem_geral(self, descricao):          
         print(self.formatar_texto("Descrição Geral do Personagem:", cor="amarelo", negrito=True))
         print(self.formatar_texto(descricao, cor="amarelo", italico=True))
     
-    """Pergunta ao usuário por uma informação específica, formatando a pergunta e fornecendo uma dica para pular a resposta."""            
+    # Pergunta ao usuário por uma informação específica, formatando a pergunta e fornecendo uma dica para pular a resposta.
     def perguntar(self, texto):
         pergunta_formatada = self.formatar_texto(texto, cor="rosa", negrito=True)
         dica_formatada = self.formatar_texto(" (aperte Enter para pular): ", italico=True)
         resposta = input(pergunta_formatada + dica_formatada).strip()
         return resposta
 
-    """Coleta informações do usuário sobre o personagem, perguntando uma série de questões definidas em um arquivo JSON."""
+    # Coleta informações do usuário sobre o personagem, perguntando uma série de questões definidas em um arquivo JSON.
     def coletar_informacoes(self):
         perguntas = self.abrir_json(self.charJsons["perguntas"])
         if not perguntas:
@@ -156,7 +156,7 @@ class BuildMyChar:
         
             self.print_personagem_info(self.respostas)
             
-    """Gera o nome do personagem, corrigindo capitalização e formatando conforme regras de nomes próprios em português."""
+    # Gera o nome do personagem, corrigindo capitalização e formatando conforme regras de nomes próprios em português.
     def gerar_nome(self):
         nome_input = self.respostas.get("Nome", "").strip()
 
@@ -241,7 +241,7 @@ class BuildMyChar:
         return nome_corrigido
 
 
-    """Cria uma descrição geral do personagem com base nas informações coletadas, usando IA para gerar um texto criativo."""
+    # Cria uma descrição geral do personagem com base nas informações coletadas, usando IA para gerar um texto criativo.
     def criar_descricao_geral(self):
         print(self.formatar_texto("\nVamos criar uma descrição geral do seu personagem, com base nas informações fornecidas.", cor="azul", negrito=True))
 
@@ -288,7 +288,7 @@ class BuildMyChar:
         print(self.formatar_texto("Descrição Geral salva com sucesso em: "+ self.charJsons["personagem_geral"], cor="verde"))
         self.print_personagem_geral(self.personagem["Descrição Geral"])
 
-    """Gera um slogan para o personagem, garantindo que esteja dentro de um intervalo específico de caracteres e coerente com a descrição geral."""  
+    # Gera um slogan para o personagem, garantindo que esteja dentro de um intervalo específico de caracteres e coerente com a descrição geral.
     def gerar_slogan(self):
         print(self.formatar_texto("\nVamos criar um Slogan para seu personagem.", cor="azul", negrito=True))
 
@@ -411,7 +411,7 @@ class BuildMyChar:
 
         return descricao
     
-    """Gera uma saudação personalizada para o personagem, garantindo que esteja dentro dos limites de caracteres e coerente com a descrição geral."""
+    # Gera uma saudação personalizada para o personagem, garantindo que esteja dentro dos limites de caracteres e coerente com a descrição geral.
     def gerar_saudacao(self):
         print(self.formatar_texto("\nVamos gerar a saudação do personagem.", cor="azul", negrito=True))
 
@@ -460,6 +460,7 @@ class BuildMyChar:
 
         return saudacao
 
+    # Gera etiquetas para o personagem, classificando-o em até 5 categorias a partir de uma lista pré-definida.
     def gerar_etiquetas(self):
         print(self.formatar_texto("\nVamos gerar as etiquetas (máx. 5 categorias).", cor="azul", negrito=True))
 
@@ -508,6 +509,7 @@ class BuildMyChar:
 
         return self.personagem["Etiquetas"]
 
+    # Gera um prompt para definir o personagem, formatando as informações de título, descrição e conteúdo.
     def gerar_prompt_definicao(self, titulo, descricao, conteudo, descricao_personagem):
         prompt = f"""
             Aqui está a descrição geral do personagem:
@@ -535,9 +537,10 @@ class BuildMyChar:
 
         return prompt
 
-
-
+    # Gera a definição do personagem, iterando sobre um template JSON e coletando informações específicas.
     def gerar_definicao(self):
+        
+        
         load_template = self.abrir_json("template.json")
         if not load_template:
             print(self.formatar_texto("Erro: Não foi possível carregar o template de definição.", cor="vermelho", negrito=True))
@@ -599,12 +602,13 @@ class BuildMyChar:
         print(json.dumps(definicao, indent=2, ensure_ascii=False))"""
         
 
-
+    # Imprime todas as informações do personagem de forma organizada.
     def imprimir_personagem(self):
         print("\n\n--- Personagem Completo ---\n")
         for chave, valor in self.personagem.items():
             print(f"{chave}:\n{valor}\n")
-            
+
+# Verifica se o script está sendo executado diretamente 
 if __name__ == "__main__":
     print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
     exit(0)

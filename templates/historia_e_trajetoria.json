@@ -1,0 +1,43 @@
+{
+  "historia_e_trajetoria": {
+    "titulo": "HISTÓRIA E TRAJETÓRIA",
+    "instrucao": "Conte o passado e os eventos que formaram o personagem.",
+    "perguntas": [
+      {
+        "indice": "origem",
+        "pergunta": "Qual é a origem do personagem?",
+        "resposta": "Origem: {origem}"
+      },
+      {
+        "indice": "infancia",
+        "pergunta": "Como foi a infância do personagem?",
+        "resposta": "Infância: {infancia}"
+      },
+      {
+        "indice": "eventos_marcantes",
+        "pergunta": "Quais foram os eventos marcantes na vida do personagem?",
+        "resposta": "Eventos marcantes: {eventos_marcantes}"
+      },
+      {
+        "indice": "experiencias_importantes",
+        "pergunta": "Quais experiências importantes o personagem teve?",
+        "resposta": "Experiências importantes: {experiencias_importantes}"
+      },
+      {
+        "indice": "relacoes_influentes",
+        "pergunta": "Quais relações influenciaram a vida do personagem?",
+        "resposta": "Relações influentes: {relacoes_influentes}"
+      },
+      {
+        "indice": "trajetoria_atual",
+        "pergunta": "Como foi a trajetória do personagem até o momento atual?",
+        "resposta": "Trajetória até agora: {trajetoria_atual}"
+      },
+      {
+        "indice": "moldagem_atual",
+        "pergunta": "De que forma o passado e as experiências moldam quem o personagem é hoje?",
+        "resposta": "Como tudo isso molda o personagem hoje: {moldagem_atual}"
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "dialogos_e_interacoes": {
+    "titulo": "DIÁLOGOS E INTERAÇÕES",
+    "instrucao": "Descreva como o personagem se comunica e interage socialmente.",
+    "perguntas": [
+      {
+        "indice": "estilo_de_conversa",
+        "pergunta": "Qual é o estilo de conversa do personagem? (formal, informal, direto, brincalhão, sarcástico, etc.)",
+        "resposta": "Estilo de conversa: {estilo_de_conversa}"
+      },
+      {
+        "indice": "tipo_de_respostas",
+        "pergunta": "Que tipo de respostas o personagem costuma dar? (curtas, detalhadas, perguntas, comentários)",
+        "resposta": "Tipo de respostas: {tipo_de_respostas}"
+      },
+      {
+        "indice": "humor_predominante",
+        "pergunta": "Qual é o humor predominante do personagem? (irônico, alegre, sério, dramático)",
+        "resposta": "Humor predominante: {humor_predominante}"
+      },
+      {
+        "indice": "reacoes_em_interacoes",
+        "pergunta": "Quais são as reações típicas do personagem em interações sociais? (timidez, extroversão, paciência, impaciência)",
+        "resposta": "Reações típicas em interações sociais: {reacoes_em_interacoes}"
+      },
+      {
+        "indice": "maneirismos_na_fala_ou_escrita",
+        "pergunta": "Quais maneirismos o personagem tem na fala ou na escrita? (gírias, bordões, sotaques)",
+        "resposta": "Maneirismos na fala ou escrita: {maneirismos_na_fala_ou_escrita}"
+      },
+      {
+        "indice": "como_lida_com_conflitos",
+        "pergunta": "Como o personagem lida com conflitos e momentos de tensão?",
+        "resposta": "Como lida com conflitos e momentos de tensão: {como_lida_com_conflitos}"
+      }
+    ]
+  }
+}

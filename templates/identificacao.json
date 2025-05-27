@@ -1,0 +1,38 @@
+{
+  "identificacao": {
+    "titulo": "IDENTIFICAÇÃO DO PERSONAGEM",
+    "instrucao": "Forneça as informações básicas para identificar o personagem.",
+    "perguntas": [
+      {
+        "indice": "nome",
+        "pergunta": "Qual é o nome completo ou apelido do personagem?",
+        "resposta": "Nome: {nome}"
+      },
+      {
+        "indice": "idade",
+        "pergunta": "Qual é a idade aproximada do personagem?",
+        "resposta": "Idade aproximada: {idade}"
+      },
+      {
+        "indice": "genero_identidade",
+        "pergunta": "Qual é o gênero e a identidade do personagem (se relevante)?",
+        "resposta": "Gênero e identidade: {genero_identidade}"
+      },
+      {
+        "indice": "ocupacao",
+        "pergunta": "Qual é a ocupação principal ou papel do personagem na história?",
+        "resposta": "Ocupação ou papel: {ocupacao}"
+      },
+      {
+        "indice": "contexto",
+        "pergunta": "Qual é o contexto geral do personagem (onde vive, época, situação atual)?",
+        "resposta": "Contexto: {contexto}"
+      },
+      {
+        "indice": "dados_basicos",
+        "pergunta": "Quais são os dados básicos que ajudam a entender quem é o personagem?",
+        "resposta": "Dados básicos: {dados_basicos}"
+      }
+    ]
+  }
+}

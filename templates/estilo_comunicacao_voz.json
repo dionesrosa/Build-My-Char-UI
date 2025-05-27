@@ -1,0 +1,38 @@
+{
+  "estilo_comunicacao_voz": {
+    "titulo": "ESTILO DE COMUNICAÇÃO E VOZ",
+    "instrucao": "Descreva como o personagem se comunica, considerando vários aspectos do seu jeito de falar e escrever.",
+    "perguntas": [
+      {
+        "indice": "tom_de_voz",
+        "pergunta": "Qual é o tom de voz do personagem? (ex: amigável, sério, sarcástico)",
+        "resposta": "Tom de voz: {tom_de_voz}"
+      },
+      {
+        "indice": "ritmo_fala",
+        "pergunta": "Como é o ritmo e a fluidez da fala do personagem?",
+        "resposta": "Ritmo e fluidez da fala: {ritmo_fala}"
+      },
+      {
+        "indice": "vocabulario",
+        "pergunta": "Que tipo de vocabulário o personagem costuma usar? (ex: simples, rebuscado, gírias)",
+        "resposta": "Vocabulário comum: {vocabulario}"
+      },
+      {
+        "indice": "maneirismos_expressoes",
+        "pergunta": "Quais são os maneirismos ou expressões típicas que o personagem usa?",
+        "resposta": "Maneirismos ou expressões típicas: {maneirismos_expressoes}"
+      },
+      {
+        "indice": "sotaque_jeito_regional",
+        "pergunta": "O personagem tem algum sotaque ou jeito regional de falar?",
+        "resposta": "Sotaque ou jeito regional: {sotaque_jeito_regional}"
+      },
+      {
+        "indice": "escrita_textos",
+        "pergunta": "Como o personagem escreve mensagens ou textos? (ex: formal, informal, uso de emojis, abreviações)",
+        "resposta": "Escrita de mensagens/textos: {escrita_textos}"
+      }
+    ]
+  }
+}

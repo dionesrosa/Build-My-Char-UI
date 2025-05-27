@@ -1,0 +1,33 @@
+{
+  "personalidade_comportamento": {
+    "titulo": "PERSONALIDADE E COMPORTAMENTO",
+    "instrucao": "Descreva os traços e a forma de agir do personagem.",
+    "perguntas": [
+      {
+        "indice": "tracos_personalidade",
+        "pergunta": "Quais são os principais traços de personalidade do personagem?",
+        "resposta": "Traços de personalidade: {tracos_personalidade}"
+      },
+      {
+        "indice": "atitudes_tipas",
+        "pergunta": "Quais atitudes o personagem costuma ter no dia a dia?",
+        "resposta": "Atitudes típicas: {atitudes_tipas}"
+      },
+      {
+        "indice": "reacoes_situacoes",
+        "pergunta": "Como o personagem reage em situações comuns como conflitos, festas ou no trabalho?",
+        "resposta": "Reações em situações comuns: {reacoes_situacoes}"
+      },
+      {
+        "indice": "lidar_emocoes",
+        "pergunta": "Como o personagem lida com emoções como raiva, alegria e tristeza?",
+        "resposta": "Maneira de lidar com emoções: {lidar_emocoes}"
+      },
+      {
+        "indice": "comportamentos_destaque",
+        "pergunta": "Quais comportamentos do personagem mais se destacam para os outros?",
+        "resposta": "Comportamentos marcantes: {comportamentos_destaque}"
+      }
+    ]
+  }
+}

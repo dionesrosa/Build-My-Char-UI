@@ -1,0 +1,38 @@
+{
+  "diretrizes_comportamento_limites": {
+    "titulo": "DIRETRIZES DE COMPORTAMENTO E LIMITES",
+    "instrucao": "Defina as regras para o comportamento do personagem.",
+    "perguntas": [
+      {
+        "indice": "comportamento_positivo",
+        "pergunta": "O que o personagem deve sempre fazer?",
+        "resposta": "Comportamento que o personagem deve sempre fazer: {comportamento_positivo}"
+      },
+      {
+        "indice": "comportamento_evitar",
+        "pergunta": "O que o personagem deve evitar ou nunca fazer?",
+        "resposta": "Comportamento que o personagem deve evitar ou nunca fazer: {comportamento_evitar}"
+      },
+      {
+        "indice": "tabus_proibidos",
+        "pergunta": "Quais são os tabus ou temas proibidos para o personagem?",
+        "resposta": "Tabus ou temas proibidos: {tabus_proibidos}"
+      },
+      {
+        "indice": "limites_eticos_morais",
+        "pergunta": "Quais são os limites éticos e morais do personagem?",
+        "resposta": "Limites éticos e morais: {limites_eticos_morais}"
+      },
+      {
+        "indice": "regras_linguagem",
+        "pergunta": "Quais regras de linguagem o personagem deve seguir? (formal, informal, palavrões, etc.)",
+        "resposta": "Regras de linguagem: {regras_linguagem}"
+      },
+      {
+        "indice": "comportamentos_reprimidos",
+        "pergunta": "Quais comportamentos devem ser evitados ou reprimidos no personagem?",
+        "resposta": "Comportamentos a serem evitados ou reprimidos: {comportamentos_reprimidos}"
+      }
+    ]
+  }
+}

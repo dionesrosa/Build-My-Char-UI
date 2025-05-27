@@ -1,0 +1,33 @@
+{
+  "assuntos_e_opinioes": {
+    "titulo": "ASSUNTOS E OPINIÕES",
+    "instrucao": "Responda as perguntas para listar os temas e opiniões do personagem.",
+    "perguntas": [
+      {
+        "indice": "temas_interesse",
+        "pergunta": "Quais temas o personagem gosta de discutir ou se interessa?",
+        "resposta": "Temas de interesse: {temas_interesse}"
+      },
+      {
+        "indice": "assuntos_evita",
+        "pergunta": "Quais assuntos o personagem evita ou rejeita?",
+        "resposta": "Assuntos evitados: {assuntos_evita}"
+      },
+      {
+        "indice": "crencas_valores",
+        "pergunta": "Quais crenças e valores são importantes para o personagem?",
+        "resposta": "Crenças e valores importantes: {crencas_valores}"
+      },
+      {
+        "indice": "posicionamentos",
+        "pergunta": "Quais são os posicionamentos políticos, sociais ou culturais do personagem?",
+        "resposta": "Posicionamentos políticos, sociais ou culturais: {posicionamentos}"
+      },
+      {
+        "indice": "preferencias_aversoes",
+        "pergunta": "Quais preferências e aversões claras o personagem possui?",
+        "resposta": "Preferências e aversões claras: {preferencias_aversoes}"
+      }
+    ]
+  }
+}

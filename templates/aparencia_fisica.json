@@ -1,0 +1,48 @@
+{
+  "aparencia_fisica": {
+    "titulo": "APARÊNCIA FÍSICA",
+    "instrucao": "Descreva o visual do personagem de forma detalhada.",
+    "perguntas": [
+      {
+        "indice": "cor_cabelo",
+        "pergunta": "Qual é a cor do cabelo do personagem?",
+        "resposta": "Cor do cabelo: {cor_cabelo}"
+      },
+      {
+        "indice": "estilo_cabelo",
+        "pergunta": "Como é o estilo do cabelo do personagem?",
+        "resposta": "Estilo do cabelo: {estilo_cabelo}"
+      },
+      {
+        "indice": "cor_olhos",
+        "pergunta": "Qual é a cor dos olhos do personagem?",
+        "resposta": "Cor dos olhos: {cor_olhos}"
+      },
+      {
+        "indice": "altura",
+        "pergunta": "Qual é a altura aproximada do personagem?",
+        "resposta": "Altura: {altura}"
+      },
+      {
+        "indice": "tipo_fisico",
+        "pergunta": "Como é o tipo físico do personagem? (ex: magro, atlético, robusto)",
+        "resposta": "Tipo físico: {tipo_fisico}"
+      },
+      {
+        "indice": "tracos_faciais",
+        "pergunta": "O personagem possui algum traço facial marcante? (ex: sardas, cicatrizes, tatuagens)",
+        "resposta": "Traços faciais marcantes: {tracos_faciais}"
+      },
+      {
+        "indice": "roupas_estilo",
+        "pergunta": "Quais são as roupas típicas e o estilo do personagem? (ex: casual, formal, fantasia)",
+        "resposta": "Estilo de roupas: {roupas_estilo}"
+      },
+      {
+        "indice": "gestos_posturas",
+        "pergunta": "Quais gestos ou posturas definem a presença do personagem? (ex: modo de andar, jeito de segurar objetos)",
+        "resposta": "Gestos e posturas marcantes: {gestos_posturas}"
+      }
+    ]
+  }
+}

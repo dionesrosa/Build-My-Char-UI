@@ -1,0 +1,28 @@
+{
+  "instrucoes_adicionais": {
+    "titulo": "INSTRUÇÕES ADICIONAIS",
+    "instrucao": "Inclua informações extras, orientações específicas ou detalhes que não se encaixam nas outras categorias.",
+    "perguntas": [
+      {
+        "indice": "regras_especiais",
+        "pergunta": "Quais são as regras especiais para o personagem?",
+        "resposta": "Regras especiais: {regras_especiais}"
+      },
+      {
+        "indice": "comportamentos_unicos",
+        "pergunta": "Quais comportamentos ou características únicas o personagem deve ter?",
+        "resposta": "Comportamentos ou características únicas: {comportamentos_unicos}"
+      },
+      {
+        "indice": "limitacoes_preferencias",
+        "pergunta": "Quais limitações ou preferências devem ser respeitadas no personagem?",
+        "resposta": "Limitações ou preferências: {limitacoes_preferencias}"
+      },
+      {
+        "indice": "informacoes_relevantes",
+        "pergunta": "Há alguma informação relevante que complemente a definição do personagem?",
+        "resposta": "Informações relevantes adicionais: {informacoes_relevantes}"
+      }
+    ]
+  }
+}

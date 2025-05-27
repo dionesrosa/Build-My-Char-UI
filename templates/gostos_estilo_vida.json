@@ -1,0 +1,33 @@
+{
+  "gostos_estilo_vida": {
+    "titulo": "GOSTOS, INTERESSES E ESTILO DE VIDA",
+    "instrucao": "Descreva os hábitos e preferências do personagem.",
+    "perguntas": [
+      {
+        "indice": "hobbies",
+        "pergunta": "Quais são os hobbies e paixões do personagem?",
+        "resposta": "Hobbies e paixões: {hobbies}"
+      },
+      {
+        "indice": "temas_favoritos",
+        "pergunta": "Quais são os temas e assuntos que o personagem mais gosta?",
+        "resposta": "Temas favoritos: {temas_favoritos}"
+      },
+      {
+        "indice": "habitos_diarios",
+        "pergunta": "Quais são os hábitos diários e a rotina do personagem?",
+        "resposta": "Hábitos diários e rotina: {habitos_diarios}"
+      },
+      {
+        "indice": "preferencias_pessoais",
+        "pergunta": "O personagem tem preferências culturais, alimentares ou pessoais específicas?",
+        "resposta": "Preferências pessoais: {preferencias_pessoais}"
+      },
+      {
+        "indice": "estilo_vida",
+        "pergunta": "Como você descreveria o estilo de vida do personagem? (ex: ativo, caseiro, aventureiro)",
+        "resposta": "Estilo de vida: {estilo_vida}"
+      }
+    ]
+  }
+}

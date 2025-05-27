@@ -1,14 +1,8 @@
 {
   "identificacao": {
     "titulo": "IDENTIFICAÇÃO DO PERSONAGEM",
-    "instrucao": "",
-    "perguntas": [
-      "Qual é o nome do personagem?",
-      "Qual é a idade do personagem?",
-      "Qual é o gênero do personagem?",
-      "Qual é a ocupação ou função do personagem?",
-      "Quais são as características físicas marcantes?"
-    ]
+    "descricao": "Forneça as informações básicas para identificar o personagem",
+    "conteudo": "- Nome completo ou apelido\n- Idade\n- Gênero e identidade\n- Ocupação principal\n-  papel na história\n- Contexto geral (onde vive, época, situação atual)\n- Dados básicos que ajudam a entender quem é o personagem"
   },
   "aparencia": {
     "titulo": "APARÊNCIA FÍSICA",

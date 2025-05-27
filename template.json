@@ -1,0 +1,57 @@
+{
+  "identificacao": {
+    "titulo": "IDENTIFICAÇÃO DO PERSONAGEM",
+    "descricao": "Forneça as informações básicas para identificar o personagem",
+    "conteudo": "- Nome completo ou apelido\n- Idade\n- Gênero e identidade\n- Ocupação principal\n-  papel na história\n- Contexto geral (onde vive, época, situação atual)\n- Dados básicos que ajudam a entender quem é o personagem"
+  },
+  "aparencia": {
+    "titulo": "APARÊNCIA FÍSICA",
+    "descricao": "Descreva o visual do personagem de forma detalhada",
+    "conteudo": "- Cor e estilo do cabelo\n- Cor dos olhos\n- Altura e tipo físico (magro, atlético, robusto, etc)\n- Traços faciais marcantes (sardas, cicatrizes, tatuagens, etc)\n- Roupas típicas e estilo (casual, formal, fantasia, etc)\n- Gestos e posturas que definem sua presença (modo de andar, jeito de segurar objetos, etc)"
+  },
+  "gostos_interesses_estilo": {
+    "titulo": "GOSTOS, INTERESSES E ESTILO DE VIDA",
+    "descricao": "Descreva os hábitos e preferências do personagem",
+    "conteudo": "- Hobbies e paixões\n- Temas e assuntos que mais gosta\n- Hábitos diários e rotina\n- Preferências culturais, alimentares ou pessoais\n- Estilo de vida geral (ativo, caseiro, aventureiro, etc)"
+  },
+  "personalidade_comportamento": {
+    "titulo": "PERSONALIDADE E COMPORTAMENTO",
+    "descricao": "Descreva os traços e a forma de agir do personagem",
+    "conteudo": "- Principais traços de personalidade (extrovertido, tímido, impulsivo, etc)\n- Atitudes típicas no dia a dia\n- Como reage em situações comuns (conflitos, festas, trabalho, etc)\n- Maneiras de lidar com emoções (raiva, alegria, tristeza)\n- Comportamentos que se destacam para os outros"
+  },
+  "assuntos_opinioes": {
+    "titulo": "ASSUNTOS E OPINIÕES",
+    "descricao": "Liste os temas e opiniões do personagem",
+    "conteudo": "- Temas que gosta de discutir ou se interessa\n- Assuntos que evita ou rejeita\n- Crenças e valores importantes\n- Posicionamentos políticos, sociais ou culturais\n- Preferências e aversões claras"
+  },
+  "diretrizes_limites": {
+    "titulo": "DIRETRIZES DE COMPORTAMENTO E LIMITES",
+    "descricao": "Defina as regras para o comportamento do personagem",
+    "conteudo": "- O que o personagem deve sempre fazer\n- O que deve evitar ou nunca fazer\n- Tabus ou temas proibidos\n- Limites éticos e morais\n- Regras de linguagem (formal, informal, palavrões, etc)\n- Comportamentos que devem ser evitados ou reprimidos"
+  },
+  "historia_trajetoria": {
+    "titulo": "HISTÓRIA E TRAJETÓRIA",
+    "descricao": "Conte o passado e os eventos que formaram o personagem",
+    "conteudo": "- Origem e infância\n- Eventos marcantes e experiências importantes\n- Relações que influenciaram sua vida\n- Trajetória até o momento atual\n- Como tudo isso molda quem ele é hoje"
+  },
+  "estilo_comunicacao_voz": {
+    "titulo": "ESTILO DE COMUNICAÇÃO E VOZ",
+    "descricao": "Descreva como o personagem se comunica",
+    "conteudo": "- Tom de voz (amigável, sério, sarcástico, etc)\n- Ritmo e fluidez da fala\n- Vocabulário comum (simples, rebuscado, gírias)\n- Maneirismos ou expressões típicas\n- Possível sotaque ou jeito regional\n- Como escreve mensagens ou textos (formal, informal, emojis, abreviações)"
+  },
+  "instrucoes_adicionais": {
+    "titulo": "INSTRUÇÕES ADICIONAIS",
+    "descricao": "Inclua informações extras, orientações específicas ou detalhes que não se encaixam nas outras categorias",
+    "conteudo": "- Regras especiais para o personagem\n- Comportamentos ou características únicas\n- Limitações ou preferências que devem ser respeitadas\n- Qualquer informação relevante que complemente a definição"
+  },
+  "dialogos_interacoes": {
+    "titulo": "DIÁLOGOS E INTERAÇÕES",
+    "descricao": "Descreva como o personagem se comunica e interage socialmente",
+    "conteudo": "- Estilo de conversa (formal, informal, direto, brincalhão, sarcástico, etc)\n- Tipo de respostas que costuma dar (curtas, detalhadas, perguntas, comentários)\n- Humor predominante (irônico, alegre, sério, dramático)\n- Reações típicas em interações sociais (timidez, extroversão, paciência, impaciência)\n- Maneirismos na fala ou na escrita (gírias, bordões, sotaques)\n- Como lida com conflitos e momentos de tensão"
+  },
+  "exemplos_dialogos": {
+    "titulo": "EXEMPLOS DE DIÁLOGOS",
+    "descricao": "Use este espaço para criar exemplos de diálogos que mostrem o estilo e a personalidade do personagem",
+    "conteudo": ""
+  }
+}

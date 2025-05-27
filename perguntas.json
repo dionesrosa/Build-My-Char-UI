@@ -1,0 +1,32 @@
+{
+  "Nome": "Qual é o nome completo do personagem?",
+  "Idade": "Qual a idade ou faixa etária do personagem?",
+  "Gênero": "Qual é o gênero e pronome que o personagem usa?",
+
+  "Altura": "Qual a altura aproximada do personagem?",
+  "Porte físico": "Ele(a) é magro(a), forte, robusto(a)?",
+  "Cor da pele": "Qual a cor da pele?",
+  "Cor dos olhos": "Qual a cor dos olhos?",
+  "Cabelo": "Qual a cor e tipo do cabelo?",
+  "Estilo de roupa": "Como costuma se vestir?",
+  "Marcas visuais": "Tem marcas visuais? (tatuagens, cicatrizes, maquiagem etc)",
+
+  "Traços de personalidade": "Liste os principais traços da personalidade (ex: teimoso, extrovertido, sonhador...):",
+  "Qualidades": "Quais são as principais qualidades do personagem?",
+  "Defeitos": "E os defeitos ou manias que mais se destacam?",
+  "Medos e inseguranças": "Tem medos ou inseguranças fortes?",
+
+  "Origem": "De onde ele(a) veio? Cidade, contexto familiar ou cultural?",
+  "História de vida": "Conte um pouco da trajetória até agora (infância, adolescência, eventos marcantes...):",
+  "Relacionamentos": "Tem relacionamentos importantes? (família, amigos, ex, inimigos...):",
+
+  "Objetivos": "Quais são os objetivos ou sonhos principais?",
+  "Valores": "Que tipo de valores ou princípios essa pessoa defende?",
+  "Comportamento social": "Como ele(a) age em interações sociais, com estranhos, amigos, em grupos?",
+  "Estilo de fala": "Tem um jeito de falar característico? (ex: gírias, formal, irônico, calado...)",
+
+  "Curiosidades": "Tem algum fato curioso, talento oculto, hobby ou vício?",
+  "Voz de referência": "Tem alguma voz ou ator/atriz que você imagina como referência?",
+  "Personagens semelhantes": "Tem personagens fictícios parecidos com ele(a)?",
+  "Detalhes adicionais": "Mais algum detalhe importante que não foi perguntado?"
+}

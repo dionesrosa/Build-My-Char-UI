@@ -966,8 +966,3 @@ class BuildMyChar:
 if __name__ == "__main__":
     print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
     
-    # ⚠️ Apenas para testes durante o desenvolvimento. Remover depois!
-    print("Executando main.py para testes...")
-    import os
-    os.system("python main.py")
-    

@@ -1,8 +1,11 @@
 import os
+from dotenv import load_dotenv
 import re
 import json
 import random
 from groq import Groq
+
+load_dotenv()
 
 class BuildMyChar:
     # Classe para construir personagens, coletando informações do usuário e gerando descrições usando IA.
@@ -85,6 +88,9 @@ class BuildMyChar:
     
     # Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado.
     def formatar_texto(self, texto, cor=None, negrito=False, italico=False, sublinhado=False):
+        
+        return texto
+    
         estilos = []
 
         cores = {
@@ -720,7 +726,7 @@ class BuildMyChar:
             print(self.formatar_texto("Erro: Descrição Geral do personagem não encontrada. Por favor, crie uma descrição geral primeiro.", cor="vermelho", negrito=True))
             return
 
-        dialogos_json = {
+        dialogos_json = """{
             "dialogos": [
                 [
                     {
@@ -773,7 +779,7 @@ class BuildMyChar:
                     }
                 ]
             ]
-        }
+        }"""
         
         prompt = f"""
             Você é um agente Json, responsável por criar conversas realistas entre um personagem fictício e outras pessoas, com base em sua descrição detalhada de personalidade, aparência, passado, profissão, etc.
@@ -783,7 +789,7 @@ class BuildMyChar:
             {descricao}
 
             ### Formato de saída obrigatório:
-            {json.dumps(dialogos_json, indent=2, ensure_ascii=False)}
+            {dialogos_json}
             
             ### Importante: 
             Nunca copie os dados do JSON acima, crie mensagens novas e únicas, que reflitam a personalidade e o estilo do personagem.
@@ -808,16 +814,16 @@ class BuildMyChar:
             # Evite respostas muito longas; prefira mensagens curtas e diretas, com linguagem informal e estilo próprio do personagem.
 
             # Não adicione comentários, explicações ou texto fora do JSON. Certifique-se de que o JSON esteja BEM FORMADO.
-            # Finalize sem nenhuma marcação extra, só o diálogo.
+            # Finalize sem nenhuma marcação extra, só o Json.
         """
 
         resposta = self.enviar_para_ia(
             prompt=prompt,
-            max_tokens=4096,
-            temperature=1.2,
-            top_p=1,
-            model="llama-3.3-70b-versatile",
-            json=True
+            max_tokens=2096,
+            temperature=0.5,
+            top_p=0.6,
+            model="llama3-70b-8192",
+            json=False
         ).strip()
 
         if not resposta:
@@ -825,7 +831,13 @@ class BuildMyChar:
             return
 
         # Salvar e mostrar
-        self.personagem["Diálogos"] = json.loads(resposta)
+        try:
+            self.personagem["Diálogos"] = json.loads(resposta)
+        except json.JSONDecodeError as e:
+            print(self.formatar_texto(f"Erro ao decodificar o JSON dos diálogos: {e}", cor="vermelho", negrito=True))
+            print(self.formatar_texto("Resposta recebida:", cor="amarelo"))
+            print(resposta)
+            return
         self.salvar_json(self.charJsons["personagem_dialogos"], self.personagem["Diálogos"])
         print(self.formatar_texto("Diálogos salvos com sucesso em: "+ self.charJsons["personagem_dialogos"], cor="verde"))
         self.print_personagem_dialogos(self.personagem["Diálogos"])

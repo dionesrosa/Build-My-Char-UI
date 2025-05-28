@@ -12,7 +12,10 @@ def main():
         builder.gerar_saudacao()
         builder.gerar_etiquetas()
         builder.gerar_definicao()
+        builder.criar_dialogos()
         builder.imprimir_personagem()
+        
+        builder.done()
 
     except KeyboardInterrupt:
         print("\nInterrupção do usuário detectada. Saindo sem problemas...")

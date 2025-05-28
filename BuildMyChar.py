@@ -34,8 +34,15 @@ class BuildMyChar:
     def abrir_json(self, caminho):
         try:
             with open(caminho, 'r', encoding='utf-8') as f:
-                return json.load(f)
-            
+                dados = json.load(f)
+
+                # Se tiver a chave "string", retorna só ela
+                if isinstance(dados, dict) and "string" in dados:
+                    return dados["string"]
+
+                # Se não tiver a chave, retorna o JSON inteiro
+                return dados
+
         except Exception as e:
             print(f"Erro ao abrir JSON: {e}")
             return {}
@@ -43,9 +50,16 @@ class BuildMyChar:
     # Salva os dados em um arquivo JSON, formatando com indentação e sem caracteres ASCII.
     def salvar_json(self, caminho, dados):
         try:
+            # Se for string, tenta converter pra JSON
+            if isinstance(dados, str):
+                try:
+                    dados = json.loads(dados)  # tenta interpretar como JSON
+                except json.JSONDecodeError:
+                    dados = {"string": dados}  # não é JSON → salva como dict com índice "string"
+
             with open(caminho, 'w', encoding='utf-8') as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
-                
+
         except Exception as e:
             print(f"Erro ao salvar JSON: {e}")
 
@@ -103,16 +117,20 @@ class BuildMyChar:
         return f"{prefixo}{texto}{reset}"
 
     # Envia um prompt para a IA e retorna a resposta formatada.
-    def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama3-70b-8192", json=False):
+    def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama-3.3-70b-versatile", json=False):
         if json:
-            response_format = {"type": "json_object"}
+            #response_format = {"type": "json_object"}
+            response_format = None
+            #extra = ", formatando respostas em JSON conforme solicitado"
+            extra = ""
         else:
             response_format = None
+            extra = ""
         
         if not system_prompt:
             system_prompt = {
                 "role": "system",
-                "content": "Você é um assistente que ajuda a criar personagens para Character.ai, formatando respostas em JSON conforme solicitado."
+                "content": f"Você é um assistente que ajuda a criar personagens para Character.ai{extra}."
             }
         else:
             system_prompt = {
@@ -128,7 +146,7 @@ class BuildMyChar:
             })
 
         response = self.client.chat.completions.create(
-            model=model,
+            model="llama3-70b-8192",
             messages=messages,
             temperature=temperature,
             max_completion_tokens=max_tokens,
@@ -156,6 +174,11 @@ class BuildMyChar:
         print(self.formatar_texto("Definições do Personagem em: " + identificador, cor="amarelo", negrito=True))
         print(self.formatar_texto("\n".join(f"{k}: {v}" for k, v in self.personagem["Definição"][identificador].items() if v), cor="amarelo", italico=True))
     
+    # Imprime os diálogos do personagem, formatando o texto para destaque.
+    def print_personagem_dialogos(self, dialogos):          
+        print(self.formatar_texto("Diálogos do Personagem:", cor="amarelo", negrito=True))
+        print(self.formatar_texto(dialogos, cor="amarelo", italico=True))
+        
     # Pergunta ao usuário por uma informação específica, formatando a pergunta e fornecendo uma dica para pular a resposta.
     def perguntar(self, texto):
         pergunta_formatada = self.formatar_texto(texto, cor="rosa", negrito=True)
@@ -224,10 +247,11 @@ class BuildMyChar:
             resposta_ia = self.enviar_para_ia(
                 prompt=prompt,
                 system_prompt=system_prompt,
-                max_tokens=250,
+                max_tokens=200,
                 temperature=1.3,
                 top_p=0.95,
-                model="llama3-70b-8192"
+                model="llama-3.3-70b-versatile",
+                json=True
             )
 
             if not resposta_ia.strip():
@@ -246,24 +270,26 @@ class BuildMyChar:
 
         # Corrigir o nome com IA
         prompt = f"""
-        Corrija e formate este nome para seguir as regras de nomes próprios em português:
+            Corrija e formate este nome para seguir as regras de nomes próprios em português:
 
-        - Corrigir capitalização (ex: "ana clara" deve virar "Ana Clara")
-        - Manter partículas como "de", "da", "dos" em minúsculo
-        - Adicionar acentos, se faltar
-        - O nome completo deve ter no máximo 20 caracteres
-        - Não adicionar ou remover palavras
-        - Retorne apenas o nome corrigido, sem explicações, sem setas, sem texto extra.
+            - Corrigir capitalização (ex: 'ana clara' deve virar 'Ana Clara')
+            - Manter partículas como 'de', 'da', 'dos' em minúsculo
+            - Adicionar acentos, se faltar
+            - O nome completo deve ter no máximo 20 caracteres
+            - Não adicionar ou remover palavras
+            - Retorne apenas o nome corrigido, sem explicações, sem setas, sem texto extra.
 
-        Nome a corrigir: "{nome_input}"
+            Nome a corrigir: {nome_input}
+
+            Responda apenas com o nome corrigido, sem aspas ou blocos de código.
         """
 
         nome_corrigido = self.enviar_para_ia(
             prompt=prompt,
-            max_tokens=50,
-            temperature=0.2,
+            max_tokens=20,
+            temperature=0.8,
             top_p=0.8,
-            model="llama3-70b-8192"
+            model="llama-3.3-70b-versatile"
         ).strip()
 
         # Se nome foi realmente corrigido e está diferente
@@ -292,7 +318,7 @@ class BuildMyChar:
 
         # Prompt com tom leve, humano e descritivo
         prompt = f"""
-            Baseado nas informações abaixo, crie uma descrição geral clara e criativa do personagem, com até 5000 caracteres.
+            Baseado nas informações abaixo, crie uma descrição geral clara e criativa do personagem, com até 7000 caracteres.
             Escreva a descrição somente em português do Brasil, sem nenhuma palavra em outro idioma.
             Não use frases de introdução como "Conheça..." ou "Apresentando...". Comece direto na descrição.
             Foque em descrever a aparência física, personalidade, gostos e desgostos, e outros detalhes relevantes.
@@ -307,10 +333,10 @@ class BuildMyChar:
 
         descricao = self.enviar_para_ia(
             prompt=prompt,
-            max_tokens=2048,
-            temperature=0.7,
-            top_p=0.95,
-            model="llama3-70b-8192"
+            max_tokens=4096,
+            temperature=1,
+            top_p=1,
+            model="llama-3.3-70b-versatile"
         )
 
         if not descricao.strip():
@@ -340,18 +366,18 @@ class BuildMyChar:
             prompt = f"""
             Com base na descrição geral do personagem abaixo:
 
-            "{descricao}"
+            {descricao}
 
-            Crie um slogan entre 40 e 50 caracteres que o personagem usaria para se descrever, usando uma frase impactante e memorável.
+            Crie um slogan com no máximo 50 caracteres que o personagem usaria para se descrever, usando uma frase impactante e memorável.
 
             Responda apenas com o slogan, sem aspas, explicações ou texto adicional.
             """
             return self.enviar_para_ia(
                 prompt=prompt,
-                max_tokens=60,
-                temperature=0.3,
+                max_tokens=20,
+                temperature=0.6,
                 top_p=0.9,
-                model="llama3-70b-8192"
+                model="llama-3.3-70b-versatile"
             ).strip()
 
         tentativa = 1
@@ -360,13 +386,13 @@ class BuildMyChar:
         while tentativa <= max_tentativas:
             slogan = tentar_gerar_slogan()
             tamanho = len(slogan)
-            if 40 <= tamanho <= 50:
+            if tamanho <= 50:
                 break
             print(self.formatar_texto(f"Tentativa {tentativa}: \"{slogan}\" ({tamanho} caracteres) fora do intervalo.", cor="amarelo"))
             tentativa += 1
 
         # Se ainda assim não estiver no intervalo
-        if not 40 <= len(slogan) <= 50:
+        if not len(slogan) <= 50:
             print(self.formatar_texto("\nA IA não gerou um slogan dentro do intervalo após 3 tentativas.", cor="vermelho"))
             resposta = input("Deseja tentar mais 3 vezes? (s/n): ").strip().lower()
             if resposta == "s":
@@ -374,7 +400,7 @@ class BuildMyChar:
                 while tentativa <= max_tentativas:
                     slogan = tentar_gerar_slogan()
                     tamanho = len(slogan)
-                    if 40 <= tamanho <= 50:
+                    if tamanho <= 50:
                         break
                     print(self.formatar_texto(f"Nova tentativa {tentativa}: \"{slogan}\" ({tamanho} caracteres) fora do intervalo.", cor="amarelo"))
                     tentativa += 1
@@ -402,7 +428,7 @@ class BuildMyChar:
             prompt = f"""
                 Com base na descrição geral abaixo, crie uma descrição clara e criativa com até 500 caracteres:
 
-                "{descricao_geral}"
+                {descricao_geral}
 
                 Responda apenas com a descrição, sem aspas, explicações ou texto extra.
             """
@@ -411,7 +437,7 @@ class BuildMyChar:
                 max_tokens=600,
                 temperature=0.6,
                 top_p=0.9,
-                model="llama3-70b-8192"
+                model="llama-3.3-70b-versatile"
             ).strip()
 
         tentativa = 1
@@ -461,12 +487,12 @@ class BuildMyChar:
         descricao_geral = self.personagem.get("Descrição Geral", "")
 
         prompt = f"""
-            Com base na descrição geral abaixo, crie uma saudação que esse personagem usaria no início de qualquer chat.
+            Com base na descrição abaixo, crie uma saudação que esse personagem usaria no início de qualquer chat.
 
             Seja coerente com a personalidade do personagem. Pode ser curta ou longa, desde que não ultrapasse 4096 caracteres.
 
             Descrição:
-            "{descricao_geral}"
+            {descricao_geral}
 
             Responda apenas com a saudação, sem aspas nem explicações.
         """
@@ -478,7 +504,7 @@ class BuildMyChar:
                 max_tokens=1000,
                 temperature=0.7,
                 top_p=0.9,
-                model="llama3-70b-8192"
+                model="llama-3.3-70b-versatile"
             ).strip()
 
             if len(saudacao) <= 4096:
@@ -526,7 +552,7 @@ class BuildMyChar:
                 max_tokens=150,
                 temperature=0.5,
                 top_p=0.9,
-                model="llama3-70b-8192"
+                model="llama-3.3-70b-versatile"
             ).strip()
 
             # Valida quantidade de etiquetas
@@ -548,8 +574,6 @@ class BuildMyChar:
     def gerar_prompt_definicao(self, dados):
         # Verifica se os dados contêm as chaves necessárias
         descricao_personagem = self.personagem.get("Descrição Geral", "")
-        
-        perguntas = []
         
         # Adicionando as perguntas com resposta formatada
         perguntas_json = json.dumps(
@@ -647,9 +671,9 @@ class BuildMyChar:
                         resposta = self.enviar_para_ia(
                             prompt=prompt,
                             max_tokens=2048, 
-                            temperature=0.51, 
-                            top_p=0.8, 
-                            model="llama3-70b-8192",
+                            temperature=1, 
+                            top_p=1, 
+                            model="llama-3.3-70b-versatile",
                             json=True
                         )
                         
@@ -679,9 +703,138 @@ class BuildMyChar:
                     self.print_personagem_definicao(identificador)
                     continue
 
+
+    def criar_dialogos(self):
+        print(self.formatar_texto("\nVamos criar uma lista de dialogos para seu personagem, com base nas informações fornecidas.", cor="azul", negrito=True))
+
+        # Já existe aos diálogos?
+        if os.path.exists(self.charJsons["personagem_dialogos"]):
+            self.personagem["Diálogos"] = self.abrir_json(self.charJsons["personagem_dialogos"])
+            print(self.formatar_texto("Arquivo existente encontrado! Diálogos carregada de: \"" + self.charJsons["personagem_dialogos"] + "\"", cor="verde"))
+            self.print_personagem_dialogos(self.personagem["Diálogos"])
+            return
+
+        # Gera rediálogos com base na descrição geral
+        descricao = self.personagem.get("Descrição Geral", "")
+        if not descricao:
+            print(self.formatar_texto("Erro: Descrição Geral do personagem não encontrada. Por favor, crie uma descrição geral primeiro.", cor="vermelho", negrito=True))
+            return
+
+        dialogos_json = {
+            "dialogos": [
+                [
+                    {
+                        "user": "random_user_2",
+                        "msg": "Márcia, você tem algum hobby?"
+                    },
+                    {
+                        "user": "char",
+                        "msg": "Sim, eu gosto de pintar e fazer jardinagem. E você, tem algum hobby?"
+                    }
+                ],
+                [
+                    {
+                        "user": "user",
+                        "msg": "Olá, você parece muito interessante. Posso conhecê-la melhor?"
+                    },
+                    {
+                        "user": "char",
+                        "msg": "Claro, eu sou Márcia. E você?"
+                    }
+                ],
+                [
+                    {
+                        "user": "char",
+                        "msg": "Ei, você gosta de música?"
+                    },
+                    {
+                        "user": "random_user_2",
+                        "msg": "Sim, adoro música! E você?"
+                    }
+                ],
+                [
+                    {
+                        "user": "random_user_1",
+                        "msg": "Márcia, você gosta de esportes?"
+                    },
+                    {
+                        "user": "char",
+                        "msg": "Gosto sim! Eu pratico yoga e adoro caminhadas ao ar livre."
+                    }
+                ],
+                [
+                    {
+                        "user": "user",
+                        "msg": "Márcia, qual é o seu filme favorito?"
+                    },
+                    {
+                        "user": "char",
+                        "msg": "Eu amo filmes de comédia romântica! Eles sempre me fazem rir."
+                    }
+                ]
+            ]
+        }
+        
+        prompt = f"""
+            Você é um agente Json, responsável por criar conversas realistas entre um personagem fictício e outras pessoas, com base em sua descrição detalhada de personalidade, aparência, passado, profissão, etc.
+            Com base na descrição do personagem abaixo, gere um Json de diálogos curtos entre o personagem e outros usuários. Cada diálogo deve conter um par de mensagens: pergunta e resposta.
+
+            ### DESCRIÇÃO DO PERSONAGEM
+            {descricao}
+
+            ### Formato de saída obrigatório:
+            {json.dumps(dialogos_json, indent=2, ensure_ascii=False)}
+            
+            ### Importante: 
+            Nunca copie os dados do JSON acima, crie mensagens novas e únicas, que reflitam a personalidade e o estilo do personagem.
+
+            A conversa deve:
+            - Mostrar o jeito de falar, emoções e estilo próprio do personagem.
+            - Misturar interações do 'char' com 'user', 'random_user_1', 'random_user_2', etc.
+            - Incluir situações diferentes: papo leve, elogios, perguntas, provocações, conselhos, piadas, etc.
+            - Ser bem natural, como se o personagem estivesse vivo.
+            - Ter aproximadamente 40 pares de mensagens.
+            - Usar mensagens curtas, naturais e diretas.
+            - Nunca sair do formato do JSON acima, nem adicionar explicações extras.
+
+            # Use 'user' para o usuário que está conversando.
+            # Use 'char' para o personagem que está respondendo.
+            # Use 'random_user_1', 'random_user_2', ... para nomes de usuários aleatórios diferentes entre si e do 'user'.
+            # Cada mensagem deve ser curta, direta e natural, como se fosse uma conversa real.
+            # As mensagens devem ser naturais, com fluxo de conversa, mostrando personalidade, jeito de falar e emoção do personagem.
+            # Inclua pelo menos 20 pares de mensagens para mostrar diferentes situações e tons da conversa.
+            # Misture perguntas do 'char' e dos 'random_user_x' para enriquecer o diálogo.
+            # Mostre como o 'char' responde a dúvidas, provocações, elogios, dúvidas pessoais, etc.
+            # Evite respostas muito longas; prefira mensagens curtas e diretas, com linguagem informal e estilo próprio do personagem.
+
+            # Não adicione comentários, explicações ou texto fora do JSON. Certifique-se de que o JSON esteja BEM FORMADO.
+            # Finalize sem nenhuma marcação extra, só o diálogo.
+        """
+
+        resposta = self.enviar_para_ia(
+            prompt=prompt,
+            max_tokens=4096,
+            temperature=1.2,
+            top_p=1,
+            model="llama-3.3-70b-versatile",
+            json=True
+        ).strip()
+
+        if not resposta:
+            print(self.formatar_texto("Erro: resposta vazia ou inválida. Tente novamente ou revise as informações.", cor="vermelho", negrito=True))
+            return
+
+        # Salvar e mostrar
+        self.personagem["Diálogos"] = json.loads(resposta)
+        self.salvar_json(self.charJsons["personagem_dialogos"], self.personagem["Diálogos"])
+        print(self.formatar_texto("Diálogos salvos com sucesso em: "+ self.charJsons["personagem_dialogos"], cor="verde"))
+        self.print_personagem_dialogos(self.personagem["Diálogos"])
+        
     # Imprime todas as informações do personagem de forma organizada.
     def imprimir_personagem(self):
         templates = self.allTemplates
+        dialogos = self.personagem.get("Diálogos", [])
+        
         codigo = ""
         
         if not templates:
@@ -707,34 +860,108 @@ class BuildMyChar:
                 dados_comp = self.personagem["Definição"][identificador]
                 status_perguntas = []
                 
-                titulo = dados.get("titulo", f"Item {i}")
+                titulo = dados.get("titulo", "")
                 codigo_perguntas = "\n\n----\n"
                 codigo_perguntas += "** " + self.formatar_texto(titulo, cor="ciano", negrito=True) + " **\n"
                 codigo_perguntas += "----\n"
                 
                 for p, pergunta in enumerate(dados.get("perguntas", []), start=1):
-                    pergunta_indice = pergunta.get("indice", None)
-                    pergunta_texto = pergunta.get("resposta", None)
-                    pergunta_resposta = dados_comp[pergunta_indice]
-                    pergunda_pronta = pergunta_texto.replace("{" + f"{pergunta_indice}" + "}", pergunta_resposta)
-                    
-                    if pergunta_texto:
-                        if pergunta_resposta != "":
-                            codigo_perguntas += "- " + pergunda_pronta + "\n"
-                            status_perguntas.append(pergunta_indice)
+                    try:
+                        pergunta_indice = pergunta.get("indice", None)
+                        pergunta_texto = pergunta.get("resposta", None)
+                        pergunta_resposta = dados_comp[pergunta_indice]
+                        
+                        pergunda_pronta = pergunta_texto.replace("{" + f"{pergunta_indice}" + "}", pergunta_resposta)
+                        
+                        if pergunta_texto:
+                            if pergunta_resposta != "":
+                                codigo_perguntas += "- " + pergunda_pronta + "\n"
+                                status_perguntas.append(pergunta_indice)
+                                
+                    except Exception as e:
+                        print(self.formatar_texto(f"Erro ao processar a pergunta {p} do template {identificador}: {e}", cor="vermelho", negrito=True))
+                        continue
                             
                 codigo_perguntas += "----\n"  
                 
                 if len(status_perguntas) > 0:
                     codigo += codigo_perguntas
-                              
+        
+        # DIÁLOGOS
+        if dialogos:
+            codigo_dialogo = "\n\n\n\n----\n"
+            codigo_dialogo += self.formatar_texto("### DIÁLOGOS DO PERSONAGEM ###", cor="rosa", negrito=True)
+            codigo_dialogo += "\n----\n\n\n----\n"
+            
+            status_dialogos = []
+            
+            for i, dialogo in enumerate(dialogos["dialogos"], start=1):
+                if isinstance(dialogo, list) and len(dialogo) == 2:
+                    user_a_type = dialogo[0].get("user", "")
+                    user_a_msg = dialogo[0].get("msg", "")
+                    user_b_type = dialogo[1].get("user", "")
+                    user_b_msg = dialogo[1].get("msg", "")
+
+                    # Verifica se o diálogo é válido
+                    if not user_a_type or not user_b_type or not user_a_msg or not user_b_msg:
+                        print(self.formatar_texto(f"Diálogo {i} inválido ou incompleto. Pulando...", cor="vermelho", negrito=True))
+                        continue
+                                   
+                    # Formata o diálogo
+                    user_a_type = user_a_type.strip()
+                    user_a_msg = user_a_msg.strip()
+                    user_b_type = user_b_type.strip()
+                    user_b_msg = user_b_msg.strip()
+
+                    codigo_dialogo += f"{{{{{user_a_type}}}}}: {user_a_msg}\n"
+                    codigo_dialogo += f"{{{{{user_b_type}}}}}: {user_b_msg}\n"
+                    codigo_dialogo += "----\n"
+                    
+                    status_dialogos.append(i)
+                    
+            if len(status_dialogos) > 0:
+                codigo += codigo_dialogo
+
+        codigo_final = {"codigo": codigo.strip()}
+        
+        self.personagem["Definição Final"] = codigo_final["codigo"]
+        
         # Salva o código gerado em um arquivo JSON
-        self.salvar_json(self.charJsons["personagem_definicoes"], codigo)
+        self.salvar_json(self.charJsons["personagem_definicoes"], codigo_final)
         if os.path.exists(self.charJsons["personagem_definicoes"]):
             print(self.formatar_texto("Definições gerais do personagem salvas com sucesso em: " + self.charJsons["personagem_definicoes"], cor="verde"))
             print("\n\n" + codigo)
         
-    
+    def done(self):
+        print(self.formatar_texto("\n\nParabéns! Você completou a criação do seu personagem.", cor="verde", negrito=True))
+        print(self.formatar_texto("Agora você pode usar o personagem em suas histórias, jogos ou qualquer outro projeto criativo!", cor="verde"))
+        print(self.formatar_texto("Obrigado por usar o BuildMyChar! Até a próxima!", cor="verde", negrito=True))
+        
+        print(self.formatar_texto("\n\n\nSuas informações pro personagem estão abaixo:", cor="azul", negrito=True))
+        print("###################################")
+        print(self.formatar_texto("Nome da personagem (" + str(len(self.respostas.get("Nome"))) + " de 20 caractéres):", cor="ciano", negrito=True))
+        print(self.formatar_texto(self.respostas.get("Nome")))
+        print("----------")
+        print(self.formatar_texto("Slogan (" + str(len(self.personagem.get("Slogan"))) + " de 50 caractéres):", cor="ciano", negrito=True))
+        print(self.formatar_texto(self.personagem.get("Slogan")))
+        print("----------")
+        print(self.formatar_texto("Descrição (" + str(len(self.personagem.get("Descrição"))) + " de 500 caractéres):", cor="ciano", negrito=True))
+        print(self.formatar_texto(self.personagem.get("Descrição")))
+        print("----------")
+        print(self.formatar_texto("Saudação (" + str(len(self.personagem.get("Saudação"))) + " de 4096 caractéres):", cor="ciano", negrito=True))
+        print(self.formatar_texto(self.personagem.get("Saudação")))
+        print("----------")
+        etiquetas = self.personagem.get("Etiquetas")
+        lista_etiquetas = [e.strip() for e in etiquetas.split(",") if e.strip()]
+        print(self.formatar_texto("Etiquetas (" + str(len(lista_etiquetas)) + " de 5 etiquetas):", cor="ciano", negrito=True))
+        print(self.formatar_texto(etiquetas))
+        print("----------")
+        print(self.formatar_texto("Definições (" + str(len(self.personagem.get("Definição Final"))) + " de 32000 caractéres):", cor="ciano", negrito=True))
+        print(self.formatar_texto(self.personagem.get("Definição Final")))
+        
+        print("###################################")
+        
+        
 # Verifica se o script está sendo executado diretamente 
 if __name__ == "__main__":
     print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")

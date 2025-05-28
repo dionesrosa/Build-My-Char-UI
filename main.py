@@ -12,8 +12,8 @@ def main():
         builder.gerar_saudacao()
         builder.gerar_etiquetas()
         builder.gerar_definicao()
-        """
-        builder.imprimir_personagem()"""
+        builder.imprimir_personagem()
+
     except KeyboardInterrupt:
         print("\nInterrupção do usuário detectada. Saindo sem problemas...")
 

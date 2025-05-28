@@ -15,6 +15,7 @@ class BuildMyChar:
         self.client = Groq(api_key=api_key)
         self.respostas = {}
         self.personagem = {}
+        self.allTemplates = []
         self.charJsons = {
             "perguntas": "perguntas.json",
             "personagem_info": "temp/personagem_info.json",
@@ -24,6 +25,7 @@ class BuildMyChar:
             "personagem_saudacao": "temp/personagem_saudacao.json",
             "personagem_etiquetas": "temp/personagem_etiquetas.json",
             "personagem_definicao": "temp/personagem_definicao.json",
+            "personagem_definicoes": "temp/personagem_definicoes.json",
             "personagem_dialogos": "temp/personagem_dialogos.json",
             "personagem_templates": "templates/"
         }
@@ -615,6 +617,9 @@ class BuildMyChar:
                     print(self.formatar_texto(f"Erro: Template '{file}' está vazio ou malformado. Verifique o arquivo JSON.", cor="vermelho", negrito=True))
                     continue
                 
+                # Adiciona o template carregado à lista de templates
+                self.allTemplates.append(load_template)
+                
                 print(self.formatar_texto(f"Template '{file}' carregado com sucesso!", cor="verde"))
                 
                 # Se o template for um dicionário, pega o primeiro identificador e os dados
@@ -676,10 +681,60 @@ class BuildMyChar:
 
     # Imprime todas as informações do personagem de forma organizada.
     def imprimir_personagem(self):
-        print("\n\n--- Personagem Completo ---\n")
-        for chave, valor in self.personagem.items():
-            print(f"{chave}:\n{valor}\n")
-
+        templates = self.allTemplates
+        codigo = ""
+        
+        if not templates:
+            print(self.formatar_texto(
+                "Nenhum template carregado. Por favor, gere a definição primeiro.",
+                cor="vermelho", negrito=True
+            ))
+            return
+        
+        print(self.formatar_texto(
+            "\nVamos Gerar as Definições Gerais do Personagem:",
+            cor="azul", negrito=True
+        ))
+        
+        codigo += "----\n"
+        codigo += self.formatar_texto("### DEFINIÇÕES DO PERSONAGEM ###", cor="rosa", negrito=True)
+        codigo += "\n----\n"
+        
+        for i, template in enumerate(templates, start=1):
+            if isinstance(template, dict) and template:
+                identificador = list(template.keys())[0]
+                dados = template[identificador]
+                dados_comp = self.personagem["Definição"][identificador]
+                status_perguntas = []
+                
+                titulo = dados.get("titulo", f"Item {i}")
+                codigo_perguntas = "\n\n----\n"
+                codigo_perguntas += "** " + self.formatar_texto(titulo, cor="ciano", negrito=True) + " **\n"
+                codigo_perguntas += "----\n"
+                
+                for p, pergunta in enumerate(dados.get("perguntas", []), start=1):
+                    pergunta_indice = pergunta.get("indice", None)
+                    pergunta_texto = pergunta.get("resposta", None)
+                    pergunta_resposta = dados_comp[pergunta_indice]
+                    pergunda_pronta = pergunta_texto.replace("{" + f"{pergunta_indice}" + "}", pergunta_resposta)
+                    
+                    if pergunta_texto:
+                        if pergunta_resposta != "":
+                            codigo_perguntas += "- " + pergunda_pronta + "\n"
+                            status_perguntas.append(pergunta_indice)
+                            
+                codigo_perguntas += "----\n"  
+                
+                if len(status_perguntas) > 0:
+                    codigo += codigo_perguntas
+                              
+        # Salva o código gerado em um arquivo JSON
+        self.salvar_json(self.charJsons["personagem_definicoes"], codigo)
+        if os.path.exists(self.charJsons["personagem_definicoes"]):
+            print(self.formatar_texto("Definições gerais do personagem salvas com sucesso em: " + self.charJsons["personagem_definicoes"], cor="verde"))
+            print("\n\n" + codigo)
+        
+    
 # Verifica se o script está sendo executado diretamente 
 if __name__ == "__main__":
     print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")

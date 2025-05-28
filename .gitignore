@@ -173,5 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Preferencias Pessoais
 temp/
 ARQUIVOS/
+BACKUP.bat

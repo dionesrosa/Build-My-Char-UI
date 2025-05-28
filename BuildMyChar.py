@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import random
 from groq import Groq
@@ -23,7 +24,8 @@ class BuildMyChar:
             "personagem_saudacao": "temp/personagem_saudacao.json",
             "personagem_etiquetas": "temp/personagem_etiquetas.json",
             "personagem_definicao": "temp/personagem_definicao.json",
-            "personagem_dialogos": "temp/personagem_dialogos.json"
+            "personagem_dialogos": "temp/personagem_dialogos.json",
+            "personagem_templates": "templates/"
         }
     
     # Abre um arquivo JSON e retorna os dados como um dicionário. Se ocorrer um erro, imprime uma mensagem e retorna um dicionário vazio.
@@ -45,6 +47,26 @@ class BuildMyChar:
         except Exception as e:
             print(f"Erro ao salvar JSON: {e}")
 
+    def extrair_json(self, texto):
+        try:
+            # Tenta extrair o conteúdo dentro de um bloco ```json ... ```
+            match = re.search(r"```json\s*(\{.*?\})\s*```", texto, re.DOTALL)
+            
+            if match:
+                return json.loads(match.group(1))
+            
+            # Se não encontrar, tenta achar só o primeiro objeto JSON puro
+            match = re.search(r"(\{.*\})", texto, re.DOTALL)
+            
+            if match:
+                return json.loads(match.group(1))
+            
+            else:
+                raise ValueError("JSON não encontrado na resposta.")
+            
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Erro ao decodificar JSON: {e}")
+    
     # Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado.
     def formatar_texto(self, texto, cor=None, negrito=False, italico=False, sublinhado=False):
         estilos = []
@@ -79,11 +101,16 @@ class BuildMyChar:
         return f"{prefixo}{texto}{reset}"
 
     # Envia um prompt para a IA e retorna a resposta formatada.
-    def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama3-70b-8192"):
+    def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama3-70b-8192", json=False):
+        if json:
+            response_format = {"type": "json_object"}
+        else:
+            response_format = None
+        
         if not system_prompt:
             system_prompt = {
                 "role": "system",
-                "content": "Você é um assistente que ajuda a criar personagens para Character.ai, formatando respostas conforme solicitado."
+                "content": "Você é um assistente que ajuda a criar personagens para Character.ai, formatando respostas em JSON conforme solicitado."
             }
         else:
             system_prompt = {
@@ -105,6 +132,7 @@ class BuildMyChar:
             max_completion_tokens=max_tokens,
             top_p=top_p,
             stream=False,
+            response_format=response_format,
             stop=stop,
         )
         
@@ -120,6 +148,11 @@ class BuildMyChar:
     def print_personagem_geral(self, descricao):          
         print(self.formatar_texto("Descrição Geral do Personagem:", cor="amarelo", negrito=True))
         print(self.formatar_texto(descricao, cor="amarelo", italico=True))
+        
+    # Imprime as definições do personagem, na categoria especificada, formatando o texto para destaque.
+    def print_personagem_definicao(self, identificador):          
+        print(self.formatar_texto("Definições do Personagem em: " + identificador, cor="amarelo", negrito=True))
+        print(self.formatar_texto("\n".join(f"{k}: {v}" for k, v in self.personagem["Definição"][identificador].items() if v), cor="amarelo", italico=True))
     
     # Pergunta ao usuário por uma informação específica, formatando a pergunta e fornecendo uma dica para pular a resposta.
     def perguntar(self, texto):
@@ -175,7 +208,7 @@ class BuildMyChar:
             Gere 10 nomes do gênero {genero_input} diferentes, cada um com nome e sobrenome. Cada nome completo deve ter no máximo 20 caracteres.
             Cada nome deve conter nome e sobrenome completos, ambos com pelo menos 3 letras, sem iniciais, abreviações ou nomes com apenas uma palavra.
             Use preferencialmente nomes e sobrenomes comuns no Brasil, que soem naturais e fáceis de pronunciar em português.
-            Retorne o resultado em formato JSON assim, sem explicações, comentários ou texto extra:
+            Retorne o resultado em formato JSON, sem explicações, comentários ou texto extra:
 
             {{
                 "nomes": [
@@ -510,97 +543,136 @@ class BuildMyChar:
         return self.personagem["Etiquetas"]
 
     # Gera um prompt para definir o personagem, formatando as informações de título, descrição e conteúdo.
-    def gerar_prompt_definicao(self, titulo, descricao, conteudo, descricao_personagem):
+    def gerar_prompt_definicao(self, dados):
+        # Verifica se os dados contêm as chaves necessárias
+        descricao_personagem = self.personagem.get("Descrição Geral", "")
+        
+        perguntas = []
+        
+        # Adicionando as perguntas com resposta formatada
+        perguntas_json = json.dumps(
+            [{"indice": p["indice"], "pergunta": p["pergunta"], "resposta": ""} for p in dados["perguntas"]],
+            indent=4,
+            ensure_ascii=False
+        )
+        
+        instrucao = dados.get("instrucao", "")
+        instrucao = f" ({instrucao})" if instrucao else ""
+
+        # Formata o prompt com a descrição do personagem e as perguntas
         prompt = f"""
-            Aqui está a descrição geral do personagem:
-            \"\"\"
+            Analise a descrição do personagem abaixo e responda as perguntas com base nessas descrições.
+            Sua tarefa é completar um JSON com respostas extraídas de um texto fornecido.
+
+            ### Instruções:
+            - Leia atentamente a descrição do personagem.
+            - Leia a lista de perguntas no formato JSON.
+            - Para cada item, responda com base apenas nas informações fornecidas no texto.
+            - Responda **apenas o JSON puro**, mantendo **apenas os campos "indice" e "resposta"** em cada item, sem explicações, sem texto adicional e sem blocos markdown (ex: ```json).
+            - NÃO inclua nenhuma outra palavra, frase, explicação ou aspas extras.
+            - Se a resposta não estiver clara no texto, não invente informações, apenas deixe o campo "resposta" como uma string vazia: "" (duas aspas sem espaço).
+
+            #### Descrição do personagem:
             {descricao_personagem}
-            \"\"\"
 
-            Sua tarefa é preencher os dados solicitados abaixo com base **apenas** nas informações explícitas fornecidas acima.
+            #### Perguntas sobre o personagem{instrucao}:
+            {perguntas_json}
+            
+            Responda SOMENTE com um JSON no seguinte formato:
+            {{
+    "cor_cabelo": "castanho escuro",
+    "estilo_cabelo": "liso"
+    ...
+}}
 
-            # {titulo} ({descricao})
-            {conteudo}
-
-            Formato da resposta:
-            Retorne um objeto JSON, sendo que os índices serão a informação que esta sendo pedida de forma resumida, Exemplo: Nome, Idade, Gênero, etc.
-            Não use comentários, explicações ou texto fora do JSON.
-            Se algum valor não puder ser definido com clareza, use `null`, `false`, ou `""` (string vazia), conforme o tipo. **Não invente ou deduza.**
-    
-            Preencha apenas os campos relevantes para esta seção e deixe os outros de fora se não forem mencionados ou claros.
-
-            IMPORTANTE:
-            - Responda **apenas** com o JSON válido.
-            - Não escreva texto fora do JSON.
-            - Não inclua campos genéricos ou suposições.
-        """.strip()
-
+            Não adicione comentários, explicações ou texto fora do JSON. Certifique-se de que o JSON esteja BEM FORMADO.
+            """
+            
         return prompt
 
     # Gera a definição do personagem, iterando sobre um template JSON e coletando informações específicas.
     def gerar_definicao(self):
-        
-        
-        load_template = self.abrir_json("template.json")
-        if not load_template:
-            print(self.formatar_texto("Erro: Não foi possível carregar o template de definição.", cor="vermelho", negrito=True))
+        template_files = [f for f in os.listdir(self.charJsons["personagem_templates"]) if f.endswith('.json')]
+        if not template_files:
+            print(self.formatar_texto("Nenhum template de definição encontrada. Por favor, adicione templates JSON na pasta '" + self.charJsons["personagem_templates"] + "'.", cor="vermelho", negrito=True))
             return
         
-        print(self.formatar_texto("\nVamos gerar a definição do personagem.", cor="azul", negrito=True))
-        
-        #definicao = {}
-        
-        total = len(load_template)
-        for i, (chave, dados) in enumerate(load_template.items(), start=1):
-            caminho = f"temp/personagem_definicao_{chave}.json"
-            msg = f"Gerando definição {i} de {total}: {caminho}"
-            print(self.formatar_texto(msg, cor="amarelo", italico=True))
+        else:
+            if "Definição" not in self.personagem:
+                self.personagem["Definição"] = {}
+    
+            print(self.formatar_texto("\nVamos gerar a definição do personagem.", cor="azul", negrito=True))
             
-            char_titulo = dados.get("titulo", "").strip()
-            char_descricao = dados.get("descricao", "").strip()
-            char_conteudo = dados.get("conteudo", "").strip()
-            
-            descricao = self.personagem.get("Descrição Geral", "").strip()
-            if not descricao:
-                print(self.formatar_texto("Erro: Descrição Geral do personagem não encontrada. Por favor, crie uma descrição geral primeiro.", cor="vermelho", negrito=True))
-                return
-            
-            if not char_titulo or not char_descricao or not char_conteudo:
-                print(self.formatar_texto("Erro: Dados de definição incompletos. Verifique o template JSON.", cor="vermelho", negrito=True))
-                return
+            total = len(template_files)
+            for i, file in enumerate(template_files, start=1):
+                caminho = os.path.join(self.charJsons["personagem_templates"], file)
+                msg = f"Verificando definição {i} de {total}: {caminho}"
+                print(self.formatar_texto(msg, cor="amarelo", italico=True))
 
-            prompt = self.gerar_prompt_definicao(char_titulo, char_descricao, char_conteudo, descricao)
+                # Abre o template JSON e carrega os dados
+                load_template = self.abrir_json(caminho)
+                if not isinstance(load_template, dict) or not load_template:
+                    print(self.formatar_texto(f"Erro: Template '{file}' está vazio ou malformado. Verifique o arquivo JSON.", cor="vermelho", negrito=True))
+                    continue
+                
+                print(self.formatar_texto(f"Template '{file}' carregado com sucesso!", cor="verde"))
+                
+                # Se o template for um dicionário, pega o primeiro identificador e os dados
+                identificador = list(load_template.keys())[0]
+                dados = load_template[identificador]
+                
+                definicao_file = self.charJsons["personagem_definicao"]
+                novo_arquivo = definicao_file.replace(".json", f"_{identificador}.json")
+                
+                # Já existe uma definição?
+                if os.path.exists(novo_arquivo):
+                    self.personagem["Definição"][identificador] = self.abrir_json(novo_arquivo)
+                    print(self.formatar_texto(f"Arquivo existente encontrado! Definição carregada de: \"{novo_arquivo}\"", cor="verde"))
+                    self.print_personagem_definicao(identificador)
+                    continue
 
-            resposta = self.enviar_para_ia(
-                prompt=prompt,
-                system_prompt="Você é um assistente que ajuda a criar personagens para Character.ai, formatando respostas conforme solicitado.",
-                max_tokens=200, 
-                temperature=0.51, 
-                top_p=0.8, 
-                model="llama-3.3-70b-versatile"
-            ).strip()
+                else:
+                    prompt = self.gerar_prompt_definicao(dados)
+                    
+                    max_tentativas = 3
+                    tentativa = 0
+                    definicao = None
+                    
+                    while tentativa < max_tentativas:
+                        resposta = self.enviar_para_ia(
+                            prompt=prompt,
+                            max_tokens=2048, 
+                            temperature=0.51, 
+                            top_p=0.8, 
+                            model="llama3-70b-8192",
+                            json=True
+                        )
+                        
+                        # Verifica se a resposta é válida
+                        if not resposta:
+                            print(self.formatar_texto("Erro: Resposta vazia ou inválida da IA. Tente novamente.", cor="vermelho", negrito=True))
+                            tentativa += 1
+                            continue
+                        
+                        try:
+                            definicao = self.extrair_json(resposta)
+                            break  # Sai do loop se deu certo
+                        
+                        except ValueError as erro:
+                            print(self.formatar_texto(f"Erro ao processar JSON da IA: {erro}. Tentando novamente...", cor="vermelho", negrito=True))
+                            tentativa += 1
             
-            if not resposta:
-                print(self.formatar_texto("Erro: Resposta vazia da IA. Tente novamente ou revise as informações.", cor="vermelho", negrito=True))
-                return
-            
-            print(resposta)
-            
-            return
+                    if definicao is None:
+                        print(self.formatar_texto("Erro: Não foi possível obter um JSON válido após várias tentativas.", cor="vermelho", negrito=True))
+                        return
 
-            """print(self.formatar_texto(f"\n{titulo}", cor="amarelo", negrito=True))
-            print(descricao)
-            
-            if conteudo:
-                print(self.formatar_texto("Dica:", cor="ciano") + f"\n{conteudo}")
-
-            resposta = input(self.formatar_texto("\nSua resposta: ", cor="verde")).strip()
-            definicao[chave] = resposta
-
-        # Aqui você pode salvar ou imprimir a definição gerada
-        print(self.formatar_texto("\nDefinição final gerada:", cor="azul", negrito=True))
-        print(json.dumps(definicao, indent=2, ensure_ascii=False))"""
-        
+                    # Salva a definição em um arquivo JSON
+                    self.salvar_json(novo_arquivo, definicao)
+                    
+                    self.personagem["Definição"][identificador] = definicao
+                    print(self.formatar_texto(f"Definição parcial salva com sucesso em: {novo_arquivo}", cor="verde"))
+                    self.print_personagem_definicao(identificador)
+                    continue
 
     # Imprime todas as informações do personagem de forma organizada.
     def imprimir_personagem(self):
@@ -611,4 +683,9 @@ class BuildMyChar:
 # Verifica se o script está sendo executado diretamente 
 if __name__ == "__main__":
     print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
-    exit(0)
+    
+    # ⚠️ Apenas para testes durante o desenvolvimento. Remover depois!
+    print("Executando main.py para testes...")
+    import os
+    os.system("python main.py")
+    

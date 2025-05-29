@@ -2,7 +2,7 @@
   <img src="images/cover.png" alt="Capa do Build My Char UI" style="height: 250px; margin: 50px;">
 </p>
 
-# Build-My-Char-UI
+# Build My Char UI
 
 Um gerador automatizado de personagens para plataformas como Character.AI.  
 O script utiliza a API da Groq com o modelo LLaMA3 para criar personagens realistas e completos, a partir de dados fornecidos pelo usuário.

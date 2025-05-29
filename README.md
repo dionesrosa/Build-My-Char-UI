@@ -1,4 +1,8 @@
-# BuildMyChar
+<p align="center">
+  <img src="images/cover.png" alt="Capa do Build My Char UI" style="height: 250px; margin: 50px;">
+</p>
+
+# Build-My-Char-UI
 
 Um gerador automatizado de personagens para plataformas como Character.AI.  
 O script utiliza a API da Groq com o modelo LLaMA3 para criar personagens realistas e completos, a partir de dados fornecidos pelo usuário.
@@ -29,8 +33,8 @@ O script utiliza a API da Groq com o modelo LLaMA3 para criar personagens realis
 Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/BuildMyChar.git
-cd BuildMyChar
+git clone https://github.com/seu-usuario/Build-My-Char-UI.git
+cd Build-My-Char-UI
 ```
 
 Instale as dependências:

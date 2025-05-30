@@ -175,6 +175,7 @@ cython_debug/
 
 # Preferencias Pessoais
 temp/
+temp_*/
 ARQUIVOS/
 testes/
 BACKUP.bat

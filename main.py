@@ -1,7 +1,7 @@
-from BuildMyChar import BuildMyChar
+from BuildMyChar import BuildMyCharUI
 
 def main():
-    builder = BuildMyChar()
+    builder = BuildMyCharUI()
 
     try:
         builder.coletar_informacoes()

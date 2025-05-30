@@ -7,7 +7,7 @@ from groq import Groq
 
 load_dotenv()
 
-class BuildMyChar:
+class BuildMyCharUI:
     # Classe para construir personagens, coletando informações do usuário e gerando descrições usando IA.
     def __init__(self):
         api_key = os.environ.get("GROQ_API_KEY")
@@ -88,9 +88,7 @@ class BuildMyChar:
     
     # Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado.
     def formatar_texto(self, texto, cor=None, negrito=False, italico=False, sublinhado=False):
-        
-        return texto
-    
+
         estilos = []
 
         cores = {
@@ -123,46 +121,43 @@ class BuildMyChar:
         return f"{prefixo}{texto}{reset}"
 
     # Envia um prompt para a IA e retorna a resposta formatada.
-    def enviar_para_ia(self, prompt=None, system_prompt=None, max_tokens=1024, temperature=0.7, top_p=0.85, stop=None, model="llama-3.3-70b-versatile", json=False):
-        if json:
-            #response_format = {"type": "json_object"}
-            response_format = None
-            #extra = ", formatando respostas em JSON conforme solicitado"
-            extra = ""
-        else:
-            response_format = None
-            extra = ""
-        
-        if not system_prompt:
-            system_prompt = {
-                "role": "system",
-                "content": f"Você é um assistente que ajuda a criar personagens para Character.ai{extra}."
-            }
-        else:
-            system_prompt = {
-                "role": "system",
-                "content": system_prompt
-            }
+    def enviar_para_ia(self, prompt:str="", system_prompt:str="", max_tokens:int=1024, temperature:int=0.7, top_p:int=0.85, model:str="llama3-70b-8192", json:bool=False):
+        system_prompt = {
+            "role": "system",
+            "content": "Você é um assistente API que ajuda a criar personagens para Character.ai, formatando respostas e respondendo sempre em JSON conforme solicitado."
+        }
             
         messages = [system_prompt]
         if prompt:
             messages.append({
                 "role": "user",
-                "content": prompt
+                "content": prompt.replace("\n","")
             })
 
-        response = self.client.chat.completions.create(
-            model="llama3-70b-8192",
-            messages=messages,
-            temperature=temperature,
-            max_completion_tokens=max_tokens,
-            top_p=top_p,
-            stream=False,
-            response_format=response_format,
-            stop=stop,
-        )
+        if json:
+            response = self.client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=messages,
+                temperature=temperature,
+                max_completion_tokens=max_tokens,
+                top_p=top_p,
+                # Streaming não é suportado no modo JSON
+                stream=False,
+                # Ativa o modo JSON definindo o formato da resposta
+                response_format={"type": "json_object"},
+            )
+        else:
+            response = self.client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=messages,
+                temperature=temperature,
+                max_completion_tokens=max_tokens,
+                top_p=top_p,
+                # Streaming não é suportado no modo JSON
+                stream=False,
+            )
         
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content
     
     # Imprime as informações do personagem formatadas, destacando cada informação com estilo.
     def print_personagem_info(self, respostas):          
@@ -296,7 +291,7 @@ class BuildMyChar:
             temperature=0.8,
             top_p=0.8,
             model="llama-3.3-70b-versatile"
-        ).strip()
+        )
 
         # Se nome foi realmente corrigido e está diferente
         if nome_corrigido and nome_corrigido != self.respostas.get("Nome", ""):
@@ -345,12 +340,12 @@ class BuildMyChar:
             model="llama-3.3-70b-versatile"
         )
 
-        if not descricao.strip():
+        if not descricao:
             print(self.formatar_texto("Erro: descrição vazia ou inválida. Tente novamente ou revise as informações.", cor="vermelho", negrito=True))
             return
 
         # Salvar e mostrar
-        self.personagem["Descrição Geral"] = descricao.strip()
+        self.personagem["Descrição Geral"] = descricao
         self.salvar_json(self.charJsons["personagem_geral"], self.personagem["Descrição Geral"])
         print(self.formatar_texto("Descrição Geral salva com sucesso em: "+ self.charJsons["personagem_geral"], cor="verde"))
         self.print_personagem_geral(self.personagem["Descrição Geral"])
@@ -486,7 +481,7 @@ class BuildMyChar:
         if os.path.exists(self.charJsons["personagem_saudacao"]):
             self.personagem["Saudação"] = self.abrir_json(self.charJsons["personagem_saudacao"])
             print(self.formatar_texto("Arquivo existente encontrado! Saudação carregada de: \"" + self.charJsons["personagem_saudacao"] + "\"", cor="verde"))
-            print(self.personagem["Saudação"][:300] + ("..." if len(self.personagem["Saudação"]) > 300 else ""))
+            print(self.personagem["Saudação"])
             print(f"({len(self.personagem['Saudação'])} caracteres)")
             return self.personagem["Saudação"]
 
@@ -678,8 +673,7 @@ class BuildMyChar:
                             prompt=prompt,
                             max_tokens=2048, 
                             temperature=1, 
-                            top_p=1, 
-                            model="llama-3.3-70b-versatile",
+                            top_p=1,
                             json=True
                         )
                         
@@ -726,7 +720,7 @@ class BuildMyChar:
             print(self.formatar_texto("Erro: Descrição Geral do personagem não encontrada. Por favor, crie uma descrição geral primeiro.", cor="vermelho", negrito=True))
             return
 
-        dialogos_json = """{
+        dialogos_json = '''{
             "dialogos": [
                 [
                     {
@@ -779,10 +773,11 @@ class BuildMyChar:
                     }
                 ]
             ]
-        }"""
+        }'''
+        
         
         prompt = f"""
-            Você é um agente Json, responsável por criar conversas realistas entre um personagem fictício e outras pessoas, com base em sua descrição detalhada de personalidade, aparência, passado, profissão, etc.
+            Gere 200 pares de conversas realistas entre um personagem fictício e outras pessoas, com base em sua descrição detalhada de personalidade, aparência, passado, profissão, etc.
             Com base na descrição do personagem abaixo, gere um Json de diálogos curtos entre o personagem e outros usuários. Cada diálogo deve conter um par de mensagens: pergunta e resposta.
 
             ### DESCRIÇÃO DO PERSONAGEM
@@ -790,7 +785,7 @@ class BuildMyChar:
 
             ### Formato de saída obrigatório:
             {dialogos_json}
-            
+
             ### Importante: 
             Nunca copie os dados do JSON acima, crie mensagens novas e únicas, que reflitam a personalidade e o estilo do personagem.
 
@@ -799,7 +794,7 @@ class BuildMyChar:
             - Misturar interações do 'char' com 'user', 'random_user_1', 'random_user_2', etc.
             - Incluir situações diferentes: papo leve, elogios, perguntas, provocações, conselhos, piadas, etc.
             - Ser bem natural, como se o personagem estivesse vivo.
-            - Ter aproximadamente 40 pares de mensagens.
+            - Ter aproximadamente 200 pares de mensagens.
             - Usar mensagens curtas, naturais e diretas.
             - Nunca sair do formato do JSON acima, nem adicionar explicações extras.
 
@@ -808,7 +803,7 @@ class BuildMyChar:
             # Use 'random_user_1', 'random_user_2', ... para nomes de usuários aleatórios diferentes entre si e do 'user'.
             # Cada mensagem deve ser curta, direta e natural, como se fosse uma conversa real.
             # As mensagens devem ser naturais, com fluxo de conversa, mostrando personalidade, jeito de falar e emoção do personagem.
-            # Inclua pelo menos 20 pares de mensagens para mostrar diferentes situações e tons da conversa.
+            # Inclua mensagens para mostrar diferentes situações e tons da conversa.
             # Misture perguntas do 'char' e dos 'random_user_x' para enriquecer o diálogo.
             # Mostre como o 'char' responde a dúvidas, provocações, elogios, dúvidas pessoais, etc.
             # Evite respostas muito longas; prefira mensagens curtas e diretas, com linguagem informal e estilo próprio do personagem.
@@ -819,26 +814,20 @@ class BuildMyChar:
 
         resposta = self.enviar_para_ia(
             prompt=prompt,
-            max_tokens=2096,
+            max_tokens=7000,
             temperature=0.5,
             top_p=0.6,
-            model="llama3-70b-8192",
-            json=False
-        ).strip()
+            json=False,
+        )
 
         if not resposta:
             print(self.formatar_texto("Erro: resposta vazia ou inválida. Tente novamente ou revise as informações.", cor="vermelho", negrito=True))
             return
 
         # Salvar e mostrar
-        try:
-            self.personagem["Diálogos"] = json.loads(resposta)
-        except json.JSONDecodeError as e:
-            print(self.formatar_texto(f"Erro ao decodificar o JSON dos diálogos: {e}", cor="vermelho", negrito=True))
-            print(self.formatar_texto("Resposta recebida:", cor="amarelo"))
-            print(resposta)
-            return
-        self.salvar_json(self.charJsons["personagem_dialogos"], self.personagem["Diálogos"])
+        self.personagem["Diálogos"] = resposta
+        
+        #self.salvar_json(self.charJsons["personagem_dialogos"], self.personagem["Diálogos"])
         print(self.formatar_texto("Diálogos salvos com sucesso em: "+ self.charJsons["personagem_dialogos"], cor="verde"))
         self.print_personagem_dialogos(self.personagem["Diálogos"])
         
@@ -925,6 +914,7 @@ class BuildMyChar:
                     user_b_type = user_b_type.strip()
                     user_b_msg = user_b_msg.strip()
 
+                    codigo_dialogo += "n: "+str(i)+"\n"
                     codigo_dialogo += f"{{{{{user_a_type}}}}}: {user_a_msg}\n"
                     codigo_dialogo += f"{{{{{user_b_type}}}}}: {user_b_msg}\n"
                     codigo_dialogo += "----\n"
@@ -975,6 +965,29 @@ class BuildMyChar:
         
         
 # Verifica se o script está sendo executado diretamente 
+#if __name__ == "__main__":
+#    print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
+
+def main():
+    builder = BuildMyCharUI()
+
+    try:
+        builder.coletar_informacoes()
+        builder.gerar_nome()
+        builder.criar_descricao_geral()
+        builder.gerar_slogan()
+        builder.criar_descricao()
+        builder.gerar_saudacao()
+        builder.gerar_etiquetas()
+        builder.gerar_definicao()
+        builder.criar_dialogos()
+        builder.imprimir_personagem()
+        
+        builder.done()
+
+    except KeyboardInterrupt:
+        print("\nInterrupção do usuário detectada. Saindo sem problemas...")
+
 if __name__ == "__main__":
-    print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
+    main()
     

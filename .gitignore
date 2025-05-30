@@ -176,6 +176,7 @@ cython_debug/
 # Preferencias Pessoais
 temp/
 ARQUIVOS/
+testes/
 BACKUP.bat
 
 # Imagem de template do GitHub

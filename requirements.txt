@@ -1,2 +1,3 @@
 groq
+instructor
 python-dotenv

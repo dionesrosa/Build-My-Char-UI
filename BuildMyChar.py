@@ -387,7 +387,7 @@ class BuildMyCharUI:
             }),
             temperature=1,
             top_p=1,
-            model="llama-3.3-70b-versatile"
+            #model="llama-3.3-70b-versatile"
         )
         
         if result and isinstance(result.get("descricao"), str):
@@ -597,7 +597,8 @@ class BuildMyCharUI:
 
                         {descricao}
 
-                        Escolha no máximo 5 etiquetas para classificar esse personagem a partir da lista fornecida.
+                        Escolha no máximo 5 etiquetas listadas acima, para classificar esse personagem.
+                        Não use nenhuma outra etiqueta, a não ser as que estão na lista acima.
                         Retorne apenas em formato JSON, sem explicações ou comentários.
                     """,
                     self.gerar_modelo({
@@ -677,7 +678,7 @@ class BuildMyCharUI:
                     Modelo,
                     temperature=0.6,
                     top_p=0.9,
-                    model="llama-3.3-70b-versatile"
+                    #model="llama-3.3-70b-versatile"
                 )
      
                 if result and isinstance(result.get("perguntas"), list):
@@ -823,7 +824,7 @@ class BuildMyCharUI:
                     Modelo,
                     temperature=0.6,
                     top_p=0.9,
-                    model="llama-3.3-70b-versatile"
+                    #model="llama-3.3-70b-versatile"
                 )
                 
                 if result and isinstance(result.get("dialogos"), list):

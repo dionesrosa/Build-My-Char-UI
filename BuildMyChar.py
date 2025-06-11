@@ -8,6 +8,8 @@ from groq import Groq
 import instructor
 from pydantic import create_model, Field, ValidationError
 from typing import List
+from config import CONFIG
+from config import PROMPT
 
 load_dotenv()
 
@@ -23,19 +25,9 @@ class BuildMyCharUI:
         self.respostas = {}
         self.personagem = {}
         self.allTemplates = []
-        self.charJsons = {
-            "perguntas": "perguntas.json",
-            "personagem_info": "temp/personagem_info.json",
-            "personagem_geral": "temp/personagem_geral.json",
-            "personagem_slogan": "temp/personagem_slogan.json",
-            "personagem_descricao": "temp/personagem_descricao.json",
-            "personagem_saudacao": "temp/personagem_saudacao.json",
-            "personagem_etiquetas": "temp/personagem_etiquetas.json",
-            "personagem_definicao": "temp/personagem_definicao.json",
-            "personagem_definicoes": "temp/personagem_definicoes.json",
-            "personagem_dialogos": "temp/personagem_dialogos.json",
-            "personagem_templates": "templates/"
-        }
+        self.charJsons = CONFIG["charJsons"]
+        
+        self.start()
     
     # Abre um arquivo JSON e retorna os dados como um dicionário. Se ocorrer um erro, imprime uma mensagem e retorna um dicionário vazio.
     def abrir_json(self, caminho):
@@ -62,26 +54,6 @@ class BuildMyCharUI:
                 
         except Exception as e:
             print(f"Erro ao salvar JSON: {e}")
-
-    def extrair_json(self, texto):
-        try:
-            # Tenta extrair o conteúdo dentro de um bloco ```json ... ```
-            match = re.search(r"```json\s*(\{.*?\})\s*```", texto, re.DOTALL)
-            
-            if match:
-                return json.loads(match.group(1))
-            
-            # Se não encontrar, tenta achar só o primeiro objeto JSON puro
-            match = re.search(r"(\{.*\})", texto, re.DOTALL)
-            
-            if match:
-                return json.loads(match.group(1))
-            
-            else:
-                raise ValueError("JSON não encontrado na resposta.")
-            
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Erro ao decodificar JSON: {e}")
     
     # Formata o texto com cores e estilos ANSI, permitindo personalização de cor, negrito, itálico e sublinhado.
     def formatar_texto(self, texto, cor=None, negrito=False, italico=False, sublinhado=False):
@@ -170,60 +142,64 @@ class BuildMyCharUI:
         print("❌ Não foi possível obter uma resposta válida após várias tentativas.")
         return None
 
-    # Imprime as informações do personagem formatadas, destacando cada informação com estilo.
-    def print_personagem_info(self, respostas):          
-        print(self.formatar_texto("Informações do Personagem:", cor="amarelo", negrito=True))
-        for k, v in self.respostas.items():
-            print(self.formatar_texto(f"* {k}: {v}", cor="amarelo", italico=True))
-    
-    # Imprime a descrição geral do personagem, formatando o texto para destaque.
-    def print_personagem_geral(self, descricao):          
-        print(self.formatar_texto(f"Descrição Geral do Personagem: ({len(descricao)} caracteres)", cor="amarelo", negrito=True))
-        print(self.formatar_texto(descricao, cor="amarelo", italico=True))
-
-    # Imprime o slogan do personagem, formatando o texto para destaque.
-    def print_personagem_descricao(self, descricao):          
-        print(self.formatar_texto(f"Descrição do Personagem: ({len(descricao)} caracteres)", cor="amarelo", negrito=True))
-        print(self.formatar_texto(descricao, cor="amarelo", italico=True))
-                
-    # Imprime o slogan do personagem, formatando o texto para destaque.
-    def print_personagem_slogan(self, slogan):          
-        print(self.formatar_texto(f"Slogan do Personagem: ({len(slogan)} caracteres)", cor="amarelo", negrito=True))
-        print(self.formatar_texto(slogan, cor="amarelo", italico=True))
+    # Imprime a descrição do personagem
+    def print_char(self, tipo, conteudo):
+        if tipo == "geral":
+            titulo = f"Descrição Geral do Personagem: ({len(conteudo)} caracteres)"
+        elif tipo == "descricao":
+            titulo = f"Descrição do Personagem: ({len(conteudo)} caracteres)"
+        elif tipo == "slogan":
+            titulo = f"Slogan do Personagem: ({len(conteudo)} caracteres)"
+        elif tipo == "saudacao":
+            titulo = f"Saudação do Personagem: ({len(conteudo)} caracteres)"
+        elif tipo == "dialogos":
+            titulo = f"Diálogos do Personagem: ({len(conteudo)} diálogos)"
+        elif tipo == "info":
+            titulo = f"Informações do Personagem: ({len(conteudo)} itens)"
+        elif tipo == "etiquetas":
+            titulo = f"Etiquetas do Personagem: ({len(conteudo)} itens)"
         
-    # Imprime o slogan do personagem, formatando o texto para destaque.
-    def print_personagem_etiquetas(self, etiquetas):          
-        print(self.formatar_texto(f"Etiquetas do Personagem: ({len(etiquetas)} etiquetas)", cor="amarelo", negrito=True))
-        for etiqueta in etiquetas:
-            print(self.formatar_texto(f" - {etiqueta}", cor="amarelo", italico=True))
-
-    # Imprime a saudação do personagem, formatando o texto para destaque.
-    def print_personagem_saudacao(self, saudacao):          
-        print(self.formatar_texto(f"Saudação do Personagem: ({len(saudacao)} caracteres)", cor="amarelo", negrito=True))
-        print(self.formatar_texto(saudacao, cor="amarelo", italico=True))
+        if tipo != "definicao":
+            print(self.formatar_texto(titulo, cor="amarelo", negrito=True))
+               
+        if type(conteudo) is str:
+            if tipo == "definicao":
+                count_perguntas = 0
+                identificador = conteudo
+                for pergunta in self.personagem["Definição"][identificador]:
+                    if pergunta.get("resposta") and pergunta["resposta"].strip():
+                        count_perguntas = count_perguntas + 1
+                        
+                titulo = f"Definições do Personagem em: {conteudo} ({count_perguntas} itens)"
+                print(self.formatar_texto(titulo, cor="amarelo", negrito=True))
+            
+                for pergunta in self.personagem["Definição"][identificador]:
+                    if pergunta.get("resposta") and pergunta["resposta"].strip():
+                        print(
+                            self.formatar_texto(f'{pergunta["pergunta"]}: ', cor="rosa", negrito=False, italico=True)
+                            + self.formatar_texto(pergunta["resposta"], cor="azul", negrito=True, italico=True)
+                        )
+                            
+                print("----")
+                    
+            else:
+                print(self.formatar_texto(conteudo, cor="amarelo", italico=True))
+            
+        elif type(conteudo) is list:
+            if tipo == "info":
+                for k, v in conteudo.items():
+                    print(self.formatar_texto(f"* {k}: {v}", cor="amarelo", italico=True))
+                
+            elif tipo == "etiquetas":
+                for etiqueta in conteudo:
+                    print(self.formatar_texto(f" - {etiqueta}", cor="amarelo", italico=True))
+            
+            elif tipo == "dialogos":
+                print(conteudo)          
+            
+            else:
+                print(conteudo)
         
-    # Imprime as definições do personagem, na categoria especificada, formatando o texto para destaque.
-    def print_personagem_definicao(self, identificador):
-        count_perguntas = 0
-        for pergunta in self.personagem["Definição"][identificador]:
-            if pergunta.get("resposta") and pergunta["resposta"].strip():
-                count_perguntas = count_perguntas + 1
-                
-        print(self.formatar_texto(f"Definições do Personagem em: {identificador} ({count_perguntas} itens)", cor="amarelo", negrito=True))
-                
-        for pergunta in self.personagem["Definição"][identificador]:
-            if pergunta.get("resposta") and pergunta["resposta"].strip():
-                print(
-                    self.formatar_texto(f'{pergunta["pergunta"]}: ', cor="amarelo", negrito=False, italico=True)
-                    + self.formatar_texto(pergunta["resposta"], cor="azul", negrito=True, italico=True)
-                )
-                
-        return
-    
-    # Imprime os diálogos do personagem, formatando o texto para destaque.
-    def print_personagem_dialogos(self, dialogos):          
-        print(self.formatar_texto("Diálogos do Personagem:", cor="amarelo", negrito=True))
-        print(self.formatar_texto(dialogos, cor="amarelo", italico=True))
         
     # Pergunta ao usuário por uma informação específica, formatando a pergunta e fornecendo uma dica para pular a resposta.
     def perguntar(self, texto):
@@ -247,7 +223,7 @@ class BuildMyCharUI:
             if abrir_informacoes and isinstance(abrir_informacoes.get("informacoes"), dict):
                 self.respostas = abrir_informacoes.get("informacoes")
                 print(self.formatar_texto("Arquivo existente encontrado! Informações carregadas de: \"" + self.charJsons["personagem_info"] + "\"", cor="verde")) 
-                self.print_personagem_info(self.respostas)
+                self.print_char("info",self.respostas)
                 return
 
         else:
@@ -263,7 +239,7 @@ class BuildMyCharUI:
             self.salvar_json(self.charJsons["personagem_info"], temp_respostas)
             print(self.formatar_texto("Informações salvas com sucesso em: "+ self.charJsons["personagem_info"], cor="verde"))
         
-            self.print_personagem_info(self.respostas)
+            self.print_char("info",self.respostas)
             
     # Gera o nome do personagem, corrigindo capitalização e formatando conforme regras de nomes próprios em português.
     def gerar_nome(self):
@@ -277,15 +253,8 @@ class BuildMyCharUI:
                 genero_input = genero_input.capitalize()
 
             result = self.exec_ia(
-                f"Você é um gerador criativo de nomes do gênero: {genero_input}.",
-                f"""
-                    Gere 10 nomes completos do gênero {genero_input}.
-                    Cada nome deve conter um primeiro nome e um sobrenome, ambos com pelo menos 3 letras.
-                    Não use abreviações, letras iniciais isoladas ou nomes únicos (ex: “J. Silva” ou “Carlos”).
-                    Cada nome completo deve ter no máximo 20 caracteres.
-                    Use nomes e sobrenomes comuns no Brasil, fáceis de pronunciar em português.
-                    Retorne apenas em formato JSON, sem explicações ou comentários.
-                """,
+                PROMPT["PROMPT_GERADOR_NOME_SYSTEM"].format(genero=genero_input),
+                PROMPT["PROMPT_GERADOR_NOME_USER"].format(genero=genero_input),
                 self.gerar_modelo({
                     "nomes": List[self.gerar_modelo({
                         "nome": (str, Field(..., description="Primeiro nome do personagem")),
@@ -307,21 +276,8 @@ class BuildMyCharUI:
                 nome_input = input(self.formatar_texto("Digite o nome do personagem (até 20 caracteres): ", cor="rosa", negrito=True)).strip()
                 
             result = self.exec_ia(
-                "Você é um gerador corretor de formatação de nomes próprios.",
-                f"""
-                    Corrija e formate este nome para seguir as regras de nomes próprios em português:
-                    
-                    - Corrigir capitalização (ex: 'ana clara' deve virar 'Ana Clara')
-                    - Manter partículas como 'de', 'da', 'dos' em minúsculo
-                    - Adicionar acentos, se faltar
-                    - O nome completo deve ter no máximo 20 caracteres
-                    - Não adicionar ou remover palavras
-                    - Retorne apenas o nome corrigido, sem explicações, sem setas, sem texto extra.
-
-                    Nome a corrigir: {nome_input}
-
-                    Retorne apenas em formato JSON, sem explicações ou comentários.
-                """,
+                PROMPT["PROMPT_CORRETOR_NOME_SYSTEM"],
+                PROMPT["PROMPT_CORRETOR_NOME_USER"].format(nome=nome_input),
                 self.gerar_modelo({
                     "nome": (str, Field(..., description="Nome do personagem formatado e corrigido"))
                 }),
@@ -361,27 +317,15 @@ class BuildMyCharUI:
             if abrir_descricao_geral and isinstance(abrir_descricao_geral.get("descricao"), str):
                 self.personagem["Descrição Geral"] = abrir_descricao_geral.get("descricao")
                 print(self.formatar_texto("Arquivo existente encontrado! Descrição Geral carregada de: \"" + self.charJsons["personagem_geral"] + "\"", cor="verde"))
-                self.print_personagem_geral(self.personagem["Descrição Geral"])
+                self.print_char("geral", self.personagem["Descrição Geral"])
                 return
 
         # Gera resumo com base nas respostas
         resumo = "\n".join(f"{k.capitalize()}: {v}" for k, v in self.respostas.items())
 
         result = self.exec_ia(
-            "Você é um gerador criativo de histórias de personagens.",
-            f"""
-                Baseado nas informações abaixo, crie uma descrição geral clara e criativa do personagem, com até 7000 caracteres.
-                Escreva a descrição somente em português do Brasil, sem nenhuma palavra em outro idioma.
-                Não use frases de introdução como "Conheça..." ou "Apresentando...". Comece direto na descrição.
-                Foque em descrever a aparência física, personalidade, gostos e desgostos, e outros detalhes relevantes.
-                Evite clichês e generalizações. Use uma linguagem envolvente e que capture a essência do personagem.
-                Use um texto fluido, direto e que descreva as características e personalidade do personagem.
-                
-                Informações:
-                {resumo}
-                
-                Retorne apenas em formato JSON, sem explicações ou comentários.
-            """,
+            PROMPT["PROMPT_DESCRICAO_GERAL_SYSTEM"],
+            PROMPT["PROMPT_DESCRICAO_GERAL_USER"].format(resumo=resumo),
             self.gerar_modelo({
                 "descricao": (str, Field(..., description="Descrição completa do personagem"))
             }),
@@ -395,7 +339,7 @@ class BuildMyCharUI:
             self.personagem["Descrição Geral"] = result.get("descricao")
             self.salvar_json(self.charJsons["personagem_geral"], result)
             print(self.formatar_texto("Descrição Geral salva com sucesso em: "+ self.charJsons["personagem_geral"], cor="verde"))
-            self.print_personagem_geral(self.personagem["Descrição Geral"])
+            self.print_char("geral", self.personagem["Descrição Geral"])
         else:
             print(self.formatar_texto("Erro: descrição vazia ou inválida. Tente novamente ou revise as informações.", cor="vermelho", negrito=True))
             return
@@ -411,7 +355,7 @@ class BuildMyCharUI:
             if abrir_slogan and isinstance(abrir_slogan.get("slogan"), str):
                 self.personagem["Slogan"] = abrir_slogan.get("slogan")
                 print(self.formatar_texto("Arquivo existente encontrado! Slogan carregado de: \"" + self.charJsons["personagem_slogan"] + "\"", cor="verde"))
-                self.print_personagem_slogan(self.personagem["Slogan"])
+                self.print_char("slogan",self.personagem["Slogan"])
                 return
 
         descricao = self.personagem.get("Descrição Geral", "")
@@ -421,16 +365,8 @@ class BuildMyCharUI:
             max_caracteres:int = 50
             for tentativa in range(max_tentativas):
                 result = self.exec_ia(
-                    "Você é um gerador criativo de slogan de personagens.",
-                    f"""
-                        Com base na descrição do personagem abaixo:
-
-                        {descricao}
-
-                        Crie um slogan claro e criativo para o personagem, que chegue perto dos {max_caracteres} caracteres, use uma frase impactante e memorável.
-                        Não ultrapasse o limite de {max_caracteres} caracteres.
-                        Retorne apenas em formato JSON, sem explicações ou comentários.
-                    """,
+                    PROMPT["PROMPT_SLOGAN_SYSTEM"],
+                    PROMPT["PROMPT_SLOGAN_USER"].format(descricao=descricao,max_caracteres=max_caracteres),
                     self.gerar_modelo({
                         "slogan": (str, Field(..., description="Slogan do personagem"))
                     }),
@@ -443,7 +379,7 @@ class BuildMyCharUI:
                     self.personagem["Slogan"] = result.get("slogan")
                     self.salvar_json(self.charJsons["personagem_slogan"], result)
                     print(self.formatar_texto("Slogan salvo com sucesso em: " + self.charJsons["personagem_slogan"], cor="verde"))
-                    self.print_personagem_slogan(self.personagem["Slogan"])
+                    self.print_char("slogan",self.personagem["Slogan"])
 
                     return
                 
@@ -465,7 +401,7 @@ class BuildMyCharUI:
             if abrir_descricao and isinstance(abrir_descricao.get("descricao"), str):
                 self.personagem["Descrição"] = abrir_descricao.get("descricao")
                 print(self.formatar_texto("Arquivo existente encontrado! Descrição carregada de: \"" + self.charJsons["personagem_descricao"] + "\"", cor="verde"))
-                self.print_personagem_descricao(self.personagem["Descrição"])
+                self.print_char("descricao", self.personagem["Descrição"])
                 return
 
         descricao_geral = self.personagem.get("Descrição Geral", "")
@@ -475,16 +411,8 @@ class BuildMyCharUI:
             max_caracteres:int = 500
             for tentativa in range(max_tentativas):
                 result = self.exec_ia(
-                    "Você é um gerador criativo de slogan de personagens.",
-                    f"""
-                        Com base na descrição do personagem abaixo:
-
-                        {descricao_geral}
-
-                        Crie uma descrição clara e criativa para o personagem, que chegue perto dos {max_caracteres} caracteres que o personagem usaria para falar sobre ele e sua história.
-                        Não ultrapasse o limite de {max_caracteres} caracteres.
-                        Retorne apenas em formato JSON, sem explicações ou comentários.
-                    """,
+                    PROMPT["PROMPT_DESCRICAO_SYSTEM"],
+                    PROMPT["PROMPT_DESCRICAO_USER"].format(descricao_geral=descricao_geral,max_caracteres=max_caracteres),
                     self.gerar_modelo({
                         "descricao": (str, Field(..., description="Descrição do personagem"))
                     }),
@@ -497,7 +425,7 @@ class BuildMyCharUI:
                     self.personagem["Descrição"] = result.get("descricao")
                     self.salvar_json(self.charJsons["personagem_descricao"], result)
                     print(self.formatar_texto("Descrição salva com sucesso em: " + self.charJsons["personagem_descricao"], cor="verde"))
-                    self.print_personagem_descricao(self.personagem["Descrição"])
+                    self.print_char("descricao", self.personagem["Descrição"])
 
                     return
                 
@@ -520,7 +448,7 @@ class BuildMyCharUI:
             if abrir_saudacao and isinstance(abrir_saudacao.get("saudacao"), str):
                 self.personagem["Saudação"] = abrir_saudacao.get("saudacao")
                 print(self.formatar_texto("Arquivo existente encontrado! Saudação carregada de: \"" + self.charJsons["personagem_saudacao"] + "\"", cor="verde"))
-                self.print_personagem_saudacao(self.personagem["Saudação"])
+                self.print_char("saudacao",self.personagem["Saudação"])
                 return self.personagem["Saudação"]
 
         descricao_geral = self.personagem.get("Descrição Geral", "")
@@ -530,17 +458,8 @@ class BuildMyCharUI:
             max_caracteres:int = 4096
             for tentativa in range(max_tentativas):
                 result = self.exec_ia(
-                    "Você é um gerador criativo de saudações para um personagem.",
-                    f"""
-                        Com base na descrição do personagem abaixo:
-
-                        {descricao_geral}
-
-                        Crie uma saudação com no máximo {max_caracteres} caracteres, que esse personagem usaria no início de qualquer conversa.
-                        Seja coerente com a personalidade do personagem.
-                        Pode ser curta ou longa, desde que não ultrapasse {max_caracteres} caracteres.
-                        Retorne apenas em formato JSON, sem explicações ou comentários.
-                    """,
+                    PROMPT["PROMPT_SAUDACAO_SYSTEM"],
+                    PROMPT["PROMPT_SAUDACAO_USER"].format(descricao_geral=descricao_geral,max_caracteres=max_caracteres),
                     self.gerar_modelo({
                         "saudacao": (str, Field(..., description="Saudação do personagem"))
                     }),
@@ -553,7 +472,7 @@ class BuildMyCharUI:
                     self.personagem["Saudação"] = result.get("saudacao")
                     self.salvar_json(self.charJsons["personagem_saudacao"], result)
                     print(self.formatar_texto("Saudação salva com sucesso em: " + self.charJsons["personagem_saudacao"], cor="verde"))
-                    self.print_personagem_saudacao(self.personagem["Saudação"])
+                    self.print_char("saudacao",self.personagem["Saudação"])
                     return
                 
                 else:
@@ -575,7 +494,7 @@ class BuildMyCharUI:
             if abrir_etiquetas and isinstance(abrir_etiquetas.get("etiquetas"), list):
                 self.personagem["Etiquetas"] = abrir_etiquetas.get("etiquetas")
                 print(self.formatar_texto("Arquivo existente encontrado! Etiquetas carregadas de: \"" + self.charJsons["personagem_etiquetas"] + "\"", cor="verde"))
-                self.print_personagem_etiquetas(self.personagem["Etiquetas"])
+                self.print_char("etiquetas",self.personagem["Etiquetas"])
                 return
 
         descricao = self.personagem.get("Descrição Geral", "")
@@ -585,22 +504,8 @@ class BuildMyCharUI:
             max_caracteres:int = 5
             for tentativa in range(max_tentativas):
                 result = self.exec_ia(
-                    """
-                        Você é um organizador de etiquetas para um personagem, com base na sua descrição.
-                        Sua tarefa é escolher até 5 etiquetas da lista abaixo para o personagem.
-                        
-                        Lista de etiquetas possíveis:
-                        Anime, Action, Adventure, Fantasy, Romance, Shy, Yandere, LGBTQIA, Platonic, Boss, Boyfriend, Girlfriend, Husband, Mafia, Wife, Human, Slice of Life, Classmate, Coworker, Schoolmate, RPG, Vampire, Love interest, One-sided, Magicverse, Royalverse, Comedy, Ноггог, Supernatural, Bully, Best friend, Brother, Ghost, Police, Professor, Roommate, Sister, Student, Teacher, Robot, Collegeverse, Heroverse, Vtuber, Coming of Age, Dystopian, Mystery/Thriller, Parody, Science Fiction, Apprentice, Colleague, Crime Boss, Enemy, Executive, Father, Gangster, Mentor, Mother, Fairy, Bossy, Diligent, Empathetic, Flirtatious, Jealous, Kind, Manipulative, Narcissistic, K-Pop, Drama, Officeworkverse, Sports, Coffeeverse
-                    """,
-                    f"""
-                        Com base na descrição do personagem abaixo:
-
-                        {descricao}
-
-                        Escolha no máximo 5 etiquetas listadas acima, para classificar esse personagem.
-                        Não use nenhuma outra etiqueta, a não ser as que estão na lista acima.
-                        Retorne apenas em formato JSON, sem explicações ou comentários.
-                    """,
+                    PROMPT["PROMPT_ETIQUETAS_SYSTEM"],
+                    PROMPT["PROMPT_ETIQUETAS_USER"].format(descricao=descricao),
                     self.gerar_modelo({
                         "etiquetas": (List[str], Field(..., description="Lista de etiquetas associadas ao personagem"))
                     }),
@@ -613,7 +518,7 @@ class BuildMyCharUI:
                     self.personagem["Etiquetas"] = result.get("etiquetas")
                     self.salvar_json(self.charJsons["personagem_etiquetas"], result)
                     print(self.formatar_texto("Etiquetas salvas com sucesso em: " + self.charJsons["personagem_etiquetas"], cor="verde"))
-                    self.print_personagem_etiquetas(self.personagem["Etiquetas"])
+                    self.print_char("etiquetas",self.personagem["Etiquetas"])
 
                     return
 
@@ -655,26 +560,8 @@ class BuildMyCharUI:
             max_tentativas:int = 5
             for tentativa in range(max_tentativas):
                 result = self.exec_ia(
-                    "Você é um interpretador de textos, responsável por responder perguntas.",
-                    f"""
-                        Com base na descrição do personagem abaixo:
-
-                        {descricao_personagem}
-
-                        Analise a descrição do personagem e responda as perguntas solicitadas, seguindo as instruções fornecidas.
-
-                        ### Instruções:
-                        - Leia atentamente a descrição do personagem.
-                        - Para cada item, responda com base apenas nas informações fornecidas no texto.
-                        - Se a resposta não estiver clara no texto, não invente informações, apenas deixe o campo "resposta" como uma string vazia: "" (duas aspas sem espaço).
-                        Não esqueça de completar os itens de pergunta_id, pergunta e resposta.
-                        {instrucao}
-                        
-                        Lista de perguntas:
-                        {lista_perguntas}
-
-                        Retorne apenas em formato JSON, sem explicações ou comentários.
-                    """,
+                    PROMPT["PROMPT_INSTRUCAO_SYSTEM"],
+                    PROMPT["PROMPT_INSTRUCAO_USER"].format(descricao=descricao_personagem, instrucao=instrucao, lista=lista_perguntas),
                     Modelo,
                     temperature=0.6,
                     top_p=0.9,
@@ -738,7 +625,7 @@ class BuildMyCharUI:
                     if abrir_definicao and isinstance(abrir_definicao.get("perguntas"), list):
                         self.personagem["Definição"][identificador] = abrir_definicao.get("perguntas")
                         print(self.formatar_texto(f"Arquivo existente encontrado! Definição carregada de: \"{novo_arquivo}\"", cor="verde"))
-                        self.print_personagem_definicao(identificador)
+                        self.print_char("definicao",identificador)
                         continue
 
                 else:
@@ -748,7 +635,7 @@ class BuildMyCharUI:
                         self.personagem["Definição"][identificador] = result_perguntas.get("perguntas")
                         self.salvar_json(novo_arquivo, result_perguntas)
                         print(self.formatar_texto(f"Definição parcial salva com sucesso em: {novo_arquivo}", cor="verde"))
-                        self.print_personagem_definicao(identificador)
+                        self.print_char("definicao",identificador)
                         
                     else:
                         print(self.formatar_texto("Erro ao responder perguntas: Resposta vazia ou inválida da IA. Tente novamente.", cor="vermelho", negrito=True))
@@ -767,7 +654,7 @@ class BuildMyCharUI:
             if abrir_dialogos and isinstance(abrir_dialogos.get("dialogos"), list):
                 self.personagem["Diálogos"] = abrir_dialogos["dialogos"]
                 print(self.formatar_texto("Arquivo existente encontrado! Diálogos carregada de: \"" + self.charJsons["personagem_dialogos"] + "\"", cor="verde"))
-                self.print_personagem_dialogos(self.personagem["Diálogos"])
+                self.print_char("dialogos",self.personagem["Diálogos"])
                 
                 if len(abrir_dialogos["dialogos"]) > 100:
                     return
@@ -792,38 +679,11 @@ class BuildMyCharUI:
                 })
                 
                 result = self.exec_ia(
-                    "Você é um gerador criativo de diálogos entre personagens.",
-                    f"""
-                        Com base na descrição abaixo:
-
-                        {descricao}
-
-                        Gere 20 pares de mensagens entre o personagem principal ('char') e outras pessoas, em formato JSON.
-
-                        ### Regras importantes:
-
-                        - 'char' é o personagem descrito acima.
-                        - 'user' é quem está conversando diretamente com o personagem.
-                        - A ordem dos falantes podem varias a ordem de quem fala primeiro.
-                        - 'random_user_1', 'random_user_2', etc. são personagens secundários criados pela IA. Cada ID representa uma pessoa única.
-                        - Misture os pares de conversa entre 'char' e 'user', 'char' e 'random_user_x'.
-                        - Cada par deve conter: uma mensagem de outro personagem (user ou random_user_x) e uma resposta do 'char' podendo variar a ordem de quem manda a mensagem primeiro.
-                        - O personagem ('char') também pode iniciar a conversa em alguns pares, contanto que o segundo turno seja a resposta do outro personagem.
-
-                        ### Estilo das mensagens:
-
-                        - Mensagens devem ser curtas, diretas, informais e naturais.
-                        - Mostre claramente a personalidade, emoções e o jeito de falar do personagem ('char').
-                        - Se o 'user' ou os 'random_user_x' tiverem sotaque, modo de falar regional ou estilo próprio, reflita isso nas mensagens deles.
-                        - Misture situações diferentes: elogios, provocações, dúvidas, conselhos, piadas, desabafos, etc.
-                        - Use linguagem leve e realista, como numa conversa do dia a dia.
-                        - Evite respostas longas ou forçadas.
-                        - Não adicione comentários, instruções ou explicações fora do JSON.
-                        - O retorno deve ser apenas um JSON bem formado com os pares de conversa.
-                    """,
+                    PROMPT["PROMPT_DIALOGOS_SYSTEM"],
+                    PROMPT["PROMPT_DIALOGOS_USER"].format(descricao=descricao),
                     Modelo,
-                    temperature=0.6,
-                    top_p=0.9,
+                    temperature=1.2,
+                    top_p=0.95,
                     #model="llama-3.3-70b-versatile"
                 )
                 
@@ -839,7 +699,7 @@ class BuildMyCharUI:
                     temp_dialogos["dialogos"] = self.personagem["Diálogos"]
                     self.salvar_json(self.charJsons["personagem_dialogos"], temp_dialogos)
                     print(self.formatar_texto("Diálogos salvos com sucesso em: "+ self.charJsons["personagem_dialogos"], cor="verde"))
-                    self.print_personagem_dialogos(self.personagem["Diálogos"])
+                    self.print_char("dialogos",self.personagem["Diálogos"])
 
                     return
                 
@@ -982,25 +842,22 @@ class BuildMyCharUI:
         
         print("###################################")
         
+    def start(self):
+        self.coletar_informacoes()
+        self.gerar_nome()
+        self.criar_descricao_geral()
+        self.gerar_slogan()
+        self.criar_descricao()
+        self.gerar_saudacao()
+        self.gerar_etiquetas()
+        self.gerar_definicao()
+        self.criar_dialogos()
+        self.criar_dialogos()
+        self.criar_dialogos()
+        self.imprimir_personagem()
+        self.done()
+        
         
 # Verifica se o script está sendo executado diretamente 
-#if __name__ == "__main__":
-#    print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
-
-builder = BuildMyCharUI()
-builder.coletar_informacoes()
-builder.gerar_nome()
-builder.criar_descricao_geral()
-builder.gerar_slogan()
-builder.criar_descricao()
-builder.gerar_saudacao()
-builder.gerar_etiquetas()
-builder.gerar_definicao()
-builder.criar_dialogos()
-builder.criar_dialogos()
-builder.criar_dialogos()
-builder.criar_dialogos()
-builder.imprimir_personagem()
-
-builder.done()
-    
+if __name__ == "__main__":
+    print("Este módulo não deve ser executado diretamente. Use o script principal para interagir com a classe BuildMyChar.")
